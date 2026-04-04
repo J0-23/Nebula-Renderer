@@ -1,0 +1,9 @@
+{
+  "name": "fractal-path-tracer",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Fractal Path Tracer Web Application",
+  "scripts": {
+    "test": "node js/tests.js"
+  }
+}

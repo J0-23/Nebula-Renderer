@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fractal Path Tracer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <div id="app">
+        <nav id="rail">
+            <button class="tab on" id="t-scene" onclick="switchTab('scene', this)" title="Scene">
+                <i class="fa-solid fa-border-all"></i>
+                <span class="tab-lbl">Scene</span>
+            </button>
+            <button class="tab" id="t-fractal" onclick="switchTab('fractal', this)" title="Fractal">
+                <i class="fa-solid fa-star"></i>
+                <span class="tab-lbl">Fractal</span>
+            </button>
+            <button class="tab" id="t-color" onclick="switchTab('color', this)" title="Color">
+                <i class="fa-solid fa-palette"></i>
+                <span class="tab-lbl">Color</span>
+            </button>
+            <button class="tab" id="t-fx" onclick="switchTab('fx', this)" title="FX">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span class="tab-lbl">FX</span>
+            </button>
+            <div class="rail-sep"></div>
+            <button class="tab" id="t-build" onclick="switchTab('build', this)" title="Builder">
+                <i class="fa-solid fa-pen-ruler"></i>
+                <span class="tab-lbl">Build</span>
+            </button>
+            <button class="tab" id="t-debug" onclick="switchTab('debug', this)" title="Debugger">
+                <i class="fa-solid fa-bug"></i>
+                <span class="tab-lbl">Debug</span>
+            </button>
+        </nav>
+
+        <div id="panel">
+            <div class="pane on" id="p-scene">
+                <div class="ph">
+                    <h2>Scene</h2>
+                    <p>Resolution &amp; sampling</p>
+                </div>
+                <div class="pb">
+                    <div class="sec">
+                        <div class="sl">Resolution</div>
+                        <div class="fr">
+                            <div class="f">
+                                <label>W</label>
+                                <input type="number" id="iw" value="1280" min="100" max="7680">
+                            </div>
+                            <div class="f">
+                                <label>H</label>
+                                <input type="number" id="ih" value="720" min="100" max="4320">
+                            </div>
+                        </div>
+                        <div class="pills">
+                            <button class="pl on" onclick="setResolution(1280, 720, this)">720p</button>
+                            <button class="pl" onclick="setResolution(1920, 1080, this)">1080p</button>
+                            <button class="pl" onclick="setResolution(2560, 1440, this)">1440p</button>
+                            <button class="pl" onclick="setResolution(3840, 2160, this)">4K</button>
+                            <button class="pl" onclick="setResolution(7680, 4320, this)">8K</button>
+                        </div>
+                    </div>
+                    <div class="sec">
+                        <div class="sl">Camera</div>
+                        <div class="fr">
+                            <div class="f">
+                                <label>Zoom</label>
+                                <input type="number" id="zoom" value="1" min="0.01" step="0.05">
+                            </div>
+                            <div class="f">
+                                <label>Center X</label>
+                                <input type="number" id="cx" value="0" step="0.05">
+                            </div>
+                            <div class="f">
+                                <label>Center Y</label>
+                                <input type="number" id="cy" value="0" step="0.05">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sec">
+                        <div class="sl">Sampling</div>
+                        <div class="fr">
+                            <div class="f">
+                                <label>Iterations</label>
+                                <input type="number" id="iters" value="1500" min="10" max="20000">
+                            </div>
+                            <div class="f">
+                                <label>Samples</label>
+                                <input type="number" id="samples" value="800000" min="1000" step="50000">
+                            </div>
+                        </div>
+                        <div class="pills" id="qpills">
+                            <button class="pl" onclick="setQuality('low', this)">Low</button>
+                            <button class="pl on" onclick="setQuality('med', this)">Med</button>
+                            <button class="pl" onclick="setQuality('high', this)">High</button>
+                            <button class="pl" onclick="setQuality('ultra', this)">Ultra</button>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+            <div class="pane" id="p-fractal">
+                <div class="ph">
+                    <h2>Fractal</h2>
+                    <p>Presets &amp; editor</p>
+                </div>
+                <div class="pb">
+                    <div class="sec">
+                        <div class="sl">Presets</div>
+                        <div class="pc-list" id="pc-list"></div>
+                    </div>
+                    <div class="sec">
+                        <div class="sl">Filter function</div>
+                        <textarea id="filterCode" rows="6" spellcheck="false"></textarea>
+                        <div id="ferr" class="err-t"></div>
+                    </div>
+                    <div class="sec">
+                        <div class="sl">Tracer function</div>
+                        <textarea id="tracerCode" rows="7" spellcheck="false"></textarea>
+                        <div id="terr" class="err-t"></div>
+                    </div>
+                    <div class="br">
+                        <button class="btn ghost" onclick="validateFunctions()">✓ Validate</button>
+                        <button class="btn ghost" onclick="showSaveRow()"><i class="fa-solid fa-plus"></i> Save</button>
+                    </div>
+                    <div id="save-row" class="fr" style="display:none">
+                        <input type="text" id="pname" placeholder="Name…">
+                        <button class="btn pri" onclick="confirmSave()">Save</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pane" id="p-color">
+                <div class="ph">
+                    <h2>Color</h2>
+                    <p>Palette &amp; tone</p>
+                </div>
+                <div class="pb">
+                    <div class="sec">
+                        <div class="sl">Line color</div>
+                        <div class="cpw">
+                            <canvas id="lwheel" width="120" height="120"></canvas>
+                        </div>
+                        <div class="hsr">
+                            <span class="rl">H</span>
+                            <input type="range" id="lH" min="0" max="360" value="43" step="1" oninput="syncLineHSL()">
+                            <span id="lHv">43°</span>
+                        </div>
+                        <div class="hsr">
+                            <span class="rl">S</span>
+                            <input type="range" id="lS" min="0" max="100" value="100" step="1" oninput="syncLineHSL()">
+                            <span id="lSv">100%</span>
+                        </div>
+                        <div class="hsr">
+                            <span class="rl">I</span>
+                            <input type="range" id="lL" min="10" max="100" value="65" step="1" oninput="syncLineHSL()">
+                            <span id="lLv">65%</span>
+                        </div>
+                        <div class="cpprev" id="lcprev"></div>
+                    </div>
+                    <div class="sec">
+                        <div class="sl">Tone</div>
+                        <div class="f">
+                            <label>Gamma <span style="color:var(--mu);font-size:var(--fs0)">(0=bright · 4=dark)</span></label>
+                            <div class="rr">
+                                <input type="range" id="gamma" min="0.05" max="4" value="1" step="0.05" oninput="gV.textContent=parseFloat(this.value).toFixed(2);lazyRepaint()">
+                                <span id="gV">1.00</span>
+                            </div>
+                        </div>
+                        <div class="trow">
+                            <span class="tl">Invert colors</span>
+                            <label class="tsw">
+                                <input type="checkbox" id="invert" onchange="lazyRepaint()">
+                                <div class="ttr"></div>
+                                <div class="tth"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pane" id="p-fx">
+                <div class="ph">
+                    <h2>Post-Processing</h2>
+                    <p>Enhancement &amp; effects</p>
+                </div>
+                <div class="pb">
+                    <div class="sec">
+                        <div class="sl">Enhancement</div>
+                        <div class="f">
+                            <label>Blur / denoise</label>
+                            <div class="rr">
+                                <input type="range" id="blur" min="0" max="5" value="0" step="1" oninput="blV.textContent=this.value;lazyRepaint()">
+                                <span id="blV">0</span>
+                            </div>
+                        </div>
+                        <div class="f">
+                            <label>Contrast</label>
+                            <div class="rr">
+                                <input type="range" id="contrast" min="0.2" max="3" value="1" step="0.05" oninput="coV.textContent=parseFloat(this.value).toFixed(2);lazyRepaint()">
+                                <span id="coV">1.00</span>
+                            </div>
+                        </div>
+                        <div class="f">
+                            <label>Exposure</label>
+                            <div class="rr">
+                                <input type="range" id="exposure" min="0.2" max="4" value="1" step="0.05" oninput="exV.textContent=parseFloat(this.value).toFixed(2);lazyRepaint()">
+                                <span id="exV">1.00</span>
+                            </div>
+                        </div>
+                        <div class="f">
+                            <label>Hue shift</label>
+                            <div class="rr">
+                                <input type="range" id="hue" min="-180" max="180" value="0" step="1" oninput="huV.textContent=this.value+'°';lazyRepaint()">
+                                <span id="huV">0°</span>
+                            </div>
+                        </div>
+                        <div class="f">
+                            <label>Vignette</label>
+                            <div class="rr">
+                                <input type="range" id="vignette" min="0" max="1" value="0" step="0.05" oninput="viV.textContent=parseFloat(this.value).toFixed(2);lazyRepaint()">
+                                <span id="viV">0.00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sec">
+                        <div class="sl">Symmetry</div>
+                        <div class="trow">
+                            <span class="tl">Horizontal</span>
+                            <label class="tsw">
+                                <input type="checkbox" id="symH" onchange="lazyRepaint()">
+                                <div class="ttr"></div>
+                                <div class="tth"></div>
+                            </label>
+                        </div>
+                        <div class="trow">
+                            <span class="tl">Vertical</span>
+                            <label class="tsw">
+                                <input type="checkbox" id="symV" onchange="lazyRepaint()">
+                                <div class="ttr"></div>
+                                <div class="tth"></div>
+                            </label>
+                        </div>
+                        <div class="trow">
+                            <span class="tl">4-way radial</span>
+                            <label class="tsw">
+                                <input type="checkbox" id="s4" onchange="document.getElementById('symH').checked=document.getElementById('symV').checked=this.checked;lazyRepaint()">
+                                <div class="ttr"></div>
+                                <div class="tth"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pane" id="p-build">
+                <div class="ph">
+                    <h2>Builder</h2>
+                    <p>Visual fractal editor</p>
+                </div>
+                <div class="pb">
+                    <div class="sec">
+                        <div class="sl">Formula type</div>
+                        <select id="fb-t" onchange="updateFractalBuilder()">
+                            <option value="0">Mandelbrot (z² + c)</option>
+                            <option value="1">Power (zⁿ + c)</option>
+                            <option value="2">Burning Ship (|z|² + c)</option>
+                            <option value="3">Tricorn (z̄² + c)</option>
+                            <option value="4">Celtic (|Re| + c)</option>
+                            <option value="5">Sine (sin(z) + c)</option>
+                        </select>
+                    </div>
+                    <div class="sec">
+                        <div class="sl">Parameters</div>
+                        <div class="fb-grid">
+                            <div class="f">
+                                <label>Power</label>
+                                <div class="rr">
+                                    <input type="range" id="fb-p" min="2" max="8" value="2" step="0.5" oninput="fbpv.textContent=parseFloat(this.value).toFixed(1);updateFractalBuilder()">
+                                    <span id="fbpv">2.0</span>
+                                </div>
+                            </div>
+                            <div class="f">
+                                <label>Escape r</label>
+                                <div class="rr">
+                                    <input type="range" id="fb-e" min="2" max="20" value="10" step="0.5" oninput="fbev.textContent=parseFloat(this.value).toFixed(1);updateFractalBuilder()">
+                                    <span id="fbev">10.0</span>
+                                </div>
+                            </div>
+                            <div class="f">
+                                <label>Rotation°</label>
+                                <div class="rr">
+                                    <input type="range" id="fb-r" min="0" max="360" value="0" step="1" oninput="fbrv.textContent=this.value;updateFractalBuilder()">
+                                    <span id="fbrv">0</span>
+                                </div>
+                            </div>
+                            <div class="f">
+                                <label>Sign flip</label>
+                                <div class="rr">
+                                    <input type="range" id="fb-s" min="0" max="4" value="0" step="1" oninput="fbsv.textContent=this.value;updateFractalBuilder()">
+                                    <span id="fbsv">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sec">
+                        <div class="sl">Modifiers</div>
+                        <div class="trow">
+                            <span class="tl">|Real(z)|</span>
+                            <label class="tsw">
+                                <input type="checkbox" id="fb-ar" onchange="updateFractalBuilder()">
+                                <div class="ttr"></div>
+                                <div class="tth"></div>
+                            </label>
+                        </div>
+                        <div class="trow">
+                            <span class="tl">|Imag(z)|</span>
+                            <label class="tsw">
+                                <input type="checkbox" id="fb-ai" onchange="updateFractalBuilder()">
+                                <div class="ttr"></div>
+                                <div class="tth"></div>
+                            </label>
+                        </div>
+                        <div class="trow">
+                            <span class="tl">Custom c₂</span>
+                            <label class="tsw">
+                                <input type="checkbox" id="fb-uc" onchange="document.getElementById('fb-cr').style.display=this.checked?'flex':'none';updateFractalBuilder()">
+                                <div class="ttr"></div>
+                                <div class="tth"></div>
+                            </label>
+                        </div>
+                        <div class="fr" id="fb-cr" style="display:none">
+                            <div class="f">
+                                <label>Real</label>
+                                <input type="number" id="fb-cx" value="0" step="0.05" oninput="updateFractalBuilder()">
+                            </div>
+                            <div class="f">
+                                <label>Imag</label>
+                                <input type="number" id="fb-cy" value="0.5" step="0.05" oninput="updateFractalBuilder()">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="br">
+                        <button class="btn pri" onclick="applyFractalBuilder()"><i class="fa-solid fa-play"></i> Apply &amp; Render</button>
+                        <button class="btn ghost" onclick="randomFractal()">⊕ Random</button>
+                    </div>
+                    <div class="f">
+                        <label>Preview</label>
+                        <div id="fb-prev" class="code-preview">—</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pane" id="p-debug">
+                <div class="ph">
+                    <h2>Debugger</h2>
+                    <p>Step-through &amp; inspect</p>
+                </div>
+                <div class="pb">
+                    <div class="sec">
+                        <div class="sl">Test point</div>
+                        <div class="fr">
+                            <div class="f">
+                                <label>cx</label>
+                                <input type="number" id="dbg-cx" value="-0.5" step="0.05">
+                            </div>
+                            <div class="f">
+                                <label>cy</label>
+                                <input type="number" id="dbg-cy" value="0.3" step="0.05">
+                            </div>
+                            <div class="f">
+                                <label>Max steps</label>
+                                <input type="number" id="dbg-steps" value="20" min="1" max="200">
+                            </div>
+                        </div>
+                        <div class="br">
+                            <button class="btn ghost" onclick="runDebug(false)">Run filter</button>
+                            <button class="btn ghost" onclick="runDebug(true)">Trace path</button>
+                            <button class="btn" onclick="clearDebug()">Clear</button>
+                        </div>
+                    </div>
+                    <div class="sec">
+                        <div class="sl">Output</div>
+                        <div id="dbg-output">Run a function to inspect it.</div>
+                    </div>
+                    <div class="sec">
+                        <div class="sl">Validation</div>
+                        <button class="btn ghost" onclick="validateFunctions()"><i class="fa-solid fa-check"></i> Validate</button>
+                        <div id="dbg-val" class="ok-t"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="cv-area">
+            <canvas id="c"></canvas>
+            <div id="zbadge">100%</div>
+        </div>
+
+        <div id="bar">
+            <div id="bar-btns">
+                <button class="btn pri" onclick="startRender()"><i class="fa-solid fa-play"></i></button>
+                <button class="btn ghost" onclick="stopRender()"><i class="fa-solid fa-stop"></i></button>
+                <button class="btn dng" onclick="clearAll()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="bar-mid">
+                <div id="prog-wrap"><div id="prog"></div></div>
+                <div id="bar-status">Ready — click <i class="fa-solid fa-play"></i> to render</div>
+                <div id="render-stats" style="display:none;font-size:10px;color:#888;margin-left:10px;"></div>
+            </div>
+            <div id="bar-right">
+                <div id="thr-info"></div>
+                <button class="btn ghost" onclick="saveImage()"><i class="fa-solid fa-download"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as app from './js/main.js';
+        
+        // Expose functions globally for inline HTML handlers
+        window.switchTab = app.switchTab;
+        window.setQuality = app.setQuality;
+        window.setResolution = app.setResolution;
+        window.setGridDiv = app.setGridDiv;
+        window.selectPreset = app.selectPreset;
+        window.deleteCustomPreset = app.deleteCustomPreset;
+        window.showSaveRow = app.showSaveRow;
+        window.confirmSave = app.confirmSave;
+        window.validateFunctions = app.validateFunctions;
+        window.syncLineHSL = app.syncLineHSL;
+        window.updateFractalBuilder = app.updateFractalBuilder;
+        window.applyFractalBuilder = app.applyFractalBuilder;
+        window.randomFractal = app.randomFractal;
+        window.runDebug = app.runDebug;
+        window.clearDebug = app.clearDebug;
+        window.resetView = app.resetView;
+        window.triggerPaint = app.triggerPaint;
+        window.lazyRepaint = app.lazyRepaint;
+        window.clearAll = app.clearAll;
+        window.saveImage = app.saveImage;
+        window.startRender = app.startRender;
+        window.stopRender = app.stopRender;
+        window.setStatus = app.setStatus;
+        window.setProgress = app.setProgress;
+        window.init = app.init;
+        window.canvas = app.canvas;
+        window.ctx = app.ctx;
+    </script>
+</body>
+</html>
