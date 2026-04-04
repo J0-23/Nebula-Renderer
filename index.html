@@ -1,457 +1,1716 @@
 <!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fractal Path Tracer</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="css/main.css">
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Fractal Renderer</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="css/main.css" />
+  </head>
+  <body>
+    <!-- WARNING -->
+    <div id="mobile-warning">
+      <div class="warn-box">
+        <h2>Desktop Required</h2>
+        <p>This application is designed for desktop or tablet screens.</p>
+        <p>Please use a larger screen for the best experience.</p>
+      </div>
+    </div>
     <div id="app">
-        <nav id="rail">
-            <button class="tab on" id="t-scene" onclick="switchTab('scene', this)" title="Scene">
-                <i class="fa-solid fa-border-all"></i>
-                <span class="tab-lbl">Scene</span>
-            </button>
-            <button class="tab" id="t-fractal" onclick="switchTab('fractal', this)" title="Fractal">
-                <i class="fa-solid fa-star"></i>
-                <span class="tab-lbl">Fractal</span>
-            </button>
-            <button class="tab" id="t-color" onclick="switchTab('color', this)" title="Color">
-                <i class="fa-solid fa-palette"></i>
-                <span class="tab-lbl">Color</span>
-            </button>
-            <button class="tab" id="t-fx" onclick="switchTab('fx', this)" title="FX">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
-                <span class="tab-lbl">FX</span>
-            </button>
-            <div class="rail-sep"></div>
-            <button class="tab" id="t-build" onclick="switchTab('build', this)" title="Builder">
-                <i class="fa-solid fa-pen-ruler"></i>
-                <span class="tab-lbl">Build</span>
-            </button>
-            <button class="tab" id="t-debug" onclick="switchTab('debug', this)" title="Debugger">
-                <i class="fa-solid fa-bug"></i>
-                <span class="tab-lbl">Debug</span>
-            </button>
-        </nav>
+      <nav id="rail">
+        <button
+          class="tab on"
+          id="t-scene"
+          onclick="switchTab('scene', this)"
+          title="Scene"
+        >
+          <i class="fa-solid fa-border-all fa-2x"></i>
+          <span class="tab-lbl">Scene</span>
+        </button>
+        <button
+          class="tab"
+          id="t-fractal"
+          onclick="switchTab('fractal', this)"
+          title="Fractal"
+        >
+          <i class="fa-solid fa-star fa-2x"></i>
+          <span class="tab-lbl">Fractal</span>
+        </button>
+        <button
+          class="tab"
+          id="t-color"
+          onclick="switchTab('color', this)"
+          title="Color"
+        >
+          <i class="fa-solid fa-palette fa-2x"></i>
+          <span class="tab-lbl">Color</span>
+        </button>
+        <button
+          class="tab"
+          id="t-fx"
+          onclick="switchTab('fx', this)"
+          title="FX"
+        >
+          <i class="fa-solid fa-wand-magic-sparkles fa-2x"></i>
+          <span class="tab-lbl">FX</span>
+        </button>
+        <button
+          class="tab"
+          id="t-debug"
+          onclick="switchTab('debug', this)"
+          title="Debugger"
+        >
+          <i class="fa-solid fa-bug fa-2x"></i>
+          <span class="tab-lbl">Debug</span>
+        </button>
+        <div style="flex: 1"></div>
+        <button
+          class="tab"
+          id="t-learn"
+          onclick="switchTab('learn', this)"
+          title="Learn"
+        >
+          <i class="fa-solid fa-book fa-2x"></i>
+          <span class="tab-lbl">Learn</span>
+        </button>
+        <button
+          class="tab"
+          id="t-perf"
+          onclick="switchTab('perf', this)"
+          title="Performance"
+        >
+          <i class="fa-solid fa-gauge-high fa-2x"></i>
+          <span class="tab-lbl">Guide</span>
+        </button>
+      </nav>
 
-        <div id="panel">
-            <div class="pane on" id="p-scene">
-                <div class="ph">
-                    <h2>Scene</h2>
-                    <p>Resolution &amp; sampling</p>
-                </div>
-                <div class="pb">
-                    <div class="sec">
-                        <div class="sl">Resolution</div>
-                        <div class="fr">
-                            <div class="f">
-                                <label>W</label>
-                                <input type="number" id="iw" value="1280" min="100" max="7680">
-                            </div>
-                            <div class="f">
-                                <label>H</label>
-                                <input type="number" id="ih" value="720" min="100" max="4320">
-                            </div>
-                        </div>
-                        <div class="pills">
-                            <button class="pl on" onclick="setResolution(1280, 720, this)">720p</button>
-                            <button class="pl" onclick="setResolution(1920, 1080, this)">1080p</button>
-                            <button class="pl" onclick="setResolution(2560, 1440, this)">1440p</button>
-                            <button class="pl" onclick="setResolution(3840, 2160, this)">4K</button>
-                            <button class="pl" onclick="setResolution(7680, 4320, this)">8K</button>
-                        </div>
-                    </div>
-                    <div class="sec">
-                        <div class="sl">Camera</div>
-                        <div class="fr">
-                            <div class="f">
-                                <label>Zoom</label>
-                                <input type="number" id="zoom" value="1" min="0.01" step="0.05">
-                            </div>
-                            <div class="f">
-                                <label>Center X</label>
-                                <input type="number" id="cx" value="0" step="0.05">
-                            </div>
-                            <div class="f">
-                                <label>Center Y</label>
-                                <input type="number" id="cy" value="0" step="0.05">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="sec">
-                        <div class="sl">Sampling</div>
-                        <div class="fr">
-                            <div class="f">
-                                <label>Iterations</label>
-                                <input type="number" id="iters" value="1500" min="10" max="20000">
-                            </div>
-                            <div class="f">
-                                <label>Samples</label>
-                                <input type="number" id="samples" value="800000" min="1000" step="50000">
-                            </div>
-                        </div>
-                        <div class="pills" id="qpills">
-                            <button class="pl" onclick="setQuality('low', this)">Low</button>
-                            <button class="pl on" onclick="setQuality('med', this)">Med</button>
-                            <button class="pl" onclick="setQuality('high', this)">High</button>
-                            <button class="pl" onclick="setQuality('ultra', this)">Ultra</button>
-                        </div>
-                    </div>
-
-
-                </div>
-            </div>
-
-            <div class="pane" id="p-fractal">
-                <div class="ph">
-                    <h2>Fractal</h2>
-                    <p>Presets &amp; editor</p>
-                </div>
-                <div class="pb">
-                    <div class="sec">
-                        <div class="sl">Presets</div>
-                        <div class="pc-list" id="pc-list"></div>
-                    </div>
-                    <div class="sec">
-                        <div class="sl">Filter function</div>
-                        <textarea id="filterCode" rows="6" spellcheck="false"></textarea>
-                        <div id="ferr" class="err-t"></div>
-                    </div>
-                    <div class="sec">
-                        <div class="sl">Tracer function</div>
-                        <textarea id="tracerCode" rows="7" spellcheck="false"></textarea>
-                        <div id="terr" class="err-t"></div>
-                    </div>
-                    <div class="br">
-                        <button class="btn ghost" onclick="validateFunctions()">✓ Validate</button>
-                        <button class="btn ghost" onclick="showSaveRow()"><i class="fa-solid fa-plus"></i> Save</button>
-                    </div>
-                    <div id="save-row" class="fr" style="display:none">
-                        <input type="text" id="pname" placeholder="Name…">
-                        <button class="btn pri" onclick="confirmSave()">Save</button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="pane" id="p-color">
-                <div class="ph">
-                    <h2>Color</h2>
-                    <p>Palette &amp; tone</p>
-                </div>
-                <div class="pb">
-                    <div class="sec">
-                        <div class="sl">Line color</div>
-                        <div class="cpw">
-                            <canvas id="lwheel" width="120" height="120"></canvas>
-                        </div>
-                        <div class="hsr">
-                            <span class="rl">H</span>
-                            <input type="range" id="lH" min="0" max="360" value="43" step="1" oninput="syncLineHSL()">
-                            <span id="lHv">43°</span>
-                        </div>
-                        <div class="hsr">
-                            <span class="rl">S</span>
-                            <input type="range" id="lS" min="0" max="100" value="100" step="1" oninput="syncLineHSL()">
-                            <span id="lSv">100%</span>
-                        </div>
-                        <div class="hsr">
-                            <span class="rl">I</span>
-                            <input type="range" id="lL" min="10" max="100" value="65" step="1" oninput="syncLineHSL()">
-                            <span id="lLv">65%</span>
-                        </div>
-                        <div class="cpprev" id="lcprev"></div>
-                    </div>
-                    <div class="sec">
-                        <div class="sl">Tone</div>
-                        <div class="f">
-                            <label>Gamma <span style="color:var(--mu);font-size:var(--fs0)">(0=bright · 4=dark)</span></label>
-                            <div class="rr">
-                                <input type="range" id="gamma" min="0.05" max="4" value="1" step="0.05" oninput="gV.textContent=parseFloat(this.value).toFixed(2);lazyRepaint()">
-                                <span id="gV">1.00</span>
-                            </div>
-                        </div>
-                        <div class="trow">
-                            <span class="tl">Invert colors</span>
-                            <label class="tsw">
-                                <input type="checkbox" id="invert" onchange="lazyRepaint()">
-                                <div class="ttr"></div>
-                                <div class="tth"></div>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="pane" id="p-fx">
-                <div class="ph">
-                    <h2>Post-Processing</h2>
-                    <p>Enhancement &amp; effects</p>
-                </div>
-                <div class="pb">
-                    <div class="sec">
-                        <div class="sl">Enhancement</div>
-                        <div class="f">
-                            <label>Blur / denoise</label>
-                            <div class="rr">
-                                <input type="range" id="blur" min="0" max="5" value="0" step="1" oninput="blV.textContent=this.value;lazyRepaint()">
-                                <span id="blV">0</span>
-                            </div>
-                        </div>
-                        <div class="f">
-                            <label>Contrast</label>
-                            <div class="rr">
-                                <input type="range" id="contrast" min="0.2" max="3" value="1" step="0.05" oninput="coV.textContent=parseFloat(this.value).toFixed(2);lazyRepaint()">
-                                <span id="coV">1.00</span>
-                            </div>
-                        </div>
-                        <div class="f">
-                            <label>Exposure</label>
-                            <div class="rr">
-                                <input type="range" id="exposure" min="0.2" max="4" value="1" step="0.05" oninput="exV.textContent=parseFloat(this.value).toFixed(2);lazyRepaint()">
-                                <span id="exV">1.00</span>
-                            </div>
-                        </div>
-                        <div class="f">
-                            <label>Hue shift</label>
-                            <div class="rr">
-                                <input type="range" id="hue" min="-180" max="180" value="0" step="1" oninput="huV.textContent=this.value+'°';lazyRepaint()">
-                                <span id="huV">0°</span>
-                            </div>
-                        </div>
-                        <div class="f">
-                            <label>Vignette</label>
-                            <div class="rr">
-                                <input type="range" id="vignette" min="0" max="1" value="0" step="0.05" oninput="viV.textContent=parseFloat(this.value).toFixed(2);lazyRepaint()">
-                                <span id="viV">0.00</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="sec">
-                        <div class="sl">Symmetry</div>
-                        <div class="trow">
-                            <span class="tl">Horizontal</span>
-                            <label class="tsw">
-                                <input type="checkbox" id="symH" onchange="lazyRepaint()">
-                                <div class="ttr"></div>
-                                <div class="tth"></div>
-                            </label>
-                        </div>
-                        <div class="trow">
-                            <span class="tl">Vertical</span>
-                            <label class="tsw">
-                                <input type="checkbox" id="symV" onchange="lazyRepaint()">
-                                <div class="ttr"></div>
-                                <div class="tth"></div>
-                            </label>
-                        </div>
-                        <div class="trow">
-                            <span class="tl">4-way radial</span>
-                            <label class="tsw">
-                                <input type="checkbox" id="s4" onchange="document.getElementById('symH').checked=document.getElementById('symV').checked=this.checked;lazyRepaint()">
-                                <div class="ttr"></div>
-                                <div class="tth"></div>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="pane" id="p-build">
-                <div class="ph">
-                    <h2>Builder</h2>
-                    <p>Visual fractal editor</p>
-                </div>
-                <div class="pb">
-                    <div class="sec">
-                        <div class="sl">Formula type</div>
-                        <select id="fb-t" onchange="updateFractalBuilder()">
-                            <option value="0">Mandelbrot (z² + c)</option>
-                            <option value="1">Power (zⁿ + c)</option>
-                            <option value="2">Burning Ship (|z|² + c)</option>
-                            <option value="3">Tricorn (z̄² + c)</option>
-                            <option value="4">Celtic (|Re| + c)</option>
-                            <option value="5">Sine (sin(z) + c)</option>
-                        </select>
-                    </div>
-                    <div class="sec">
-                        <div class="sl">Parameters</div>
-                        <div class="fb-grid">
-                            <div class="f">
-                                <label>Power</label>
-                                <div class="rr">
-                                    <input type="range" id="fb-p" min="2" max="8" value="2" step="0.5" oninput="fbpv.textContent=parseFloat(this.value).toFixed(1);updateFractalBuilder()">
-                                    <span id="fbpv">2.0</span>
-                                </div>
-                            </div>
-                            <div class="f">
-                                <label>Escape r</label>
-                                <div class="rr">
-                                    <input type="range" id="fb-e" min="2" max="20" value="10" step="0.5" oninput="fbev.textContent=parseFloat(this.value).toFixed(1);updateFractalBuilder()">
-                                    <span id="fbev">10.0</span>
-                                </div>
-                            </div>
-                            <div class="f">
-                                <label>Rotation°</label>
-                                <div class="rr">
-                                    <input type="range" id="fb-r" min="0" max="360" value="0" step="1" oninput="fbrv.textContent=this.value;updateFractalBuilder()">
-                                    <span id="fbrv">0</span>
-                                </div>
-                            </div>
-                            <div class="f">
-                                <label>Sign flip</label>
-                                <div class="rr">
-                                    <input type="range" id="fb-s" min="0" max="4" value="0" step="1" oninput="fbsv.textContent=this.value;updateFractalBuilder()">
-                                    <span id="fbsv">0</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="sec">
-                        <div class="sl">Modifiers</div>
-                        <div class="trow">
-                            <span class="tl">|Real(z)|</span>
-                            <label class="tsw">
-                                <input type="checkbox" id="fb-ar" onchange="updateFractalBuilder()">
-                                <div class="ttr"></div>
-                                <div class="tth"></div>
-                            </label>
-                        </div>
-                        <div class="trow">
-                            <span class="tl">|Imag(z)|</span>
-                            <label class="tsw">
-                                <input type="checkbox" id="fb-ai" onchange="updateFractalBuilder()">
-                                <div class="ttr"></div>
-                                <div class="tth"></div>
-                            </label>
-                        </div>
-                        <div class="trow">
-                            <span class="tl">Custom c₂</span>
-                            <label class="tsw">
-                                <input type="checkbox" id="fb-uc" onchange="document.getElementById('fb-cr').style.display=this.checked?'flex':'none';updateFractalBuilder()">
-                                <div class="ttr"></div>
-                                <div class="tth"></div>
-                            </label>
-                        </div>
-                        <div class="fr" id="fb-cr" style="display:none">
-                            <div class="f">
-                                <label>Real</label>
-                                <input type="number" id="fb-cx" value="0" step="0.05" oninput="updateFractalBuilder()">
-                            </div>
-                            <div class="f">
-                                <label>Imag</label>
-                                <input type="number" id="fb-cy" value="0.5" step="0.05" oninput="updateFractalBuilder()">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="br">
-                        <button class="btn pri" onclick="applyFractalBuilder()"><i class="fa-solid fa-play"></i> Apply &amp; Render</button>
-                        <button class="btn ghost" onclick="randomFractal()">⊕ Random</button>
-                    </div>
-                    <div class="f">
-                        <label>Preview</label>
-                        <div id="fb-prev" class="code-preview">—</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="pane" id="p-debug">
-                <div class="ph">
-                    <h2>Debugger</h2>
-                    <p>Step-through &amp; inspect</p>
-                </div>
-                <div class="pb">
-                    <div class="sec">
-                        <div class="sl">Test point</div>
-                        <div class="fr">
-                            <div class="f">
-                                <label>cx</label>
-                                <input type="number" id="dbg-cx" value="-0.5" step="0.05">
-                            </div>
-                            <div class="f">
-                                <label>cy</label>
-                                <input type="number" id="dbg-cy" value="0.3" step="0.05">
-                            </div>
-                            <div class="f">
-                                <label>Max steps</label>
-                                <input type="number" id="dbg-steps" value="20" min="1" max="200">
-                            </div>
-                        </div>
-                        <div class="br">
-                            <button class="btn ghost" onclick="runDebug(false)">Run filter</button>
-                            <button class="btn ghost" onclick="runDebug(true)">Trace path</button>
-                            <button class="btn" onclick="clearDebug()">Clear</button>
-                        </div>
-                    </div>
-                    <div class="sec">
-                        <div class="sl">Output</div>
-                        <div id="dbg-output">Run a function to inspect it.</div>
-                    </div>
-                    <div class="sec">
-                        <div class="sl">Validation</div>
-                        <button class="btn ghost" onclick="validateFunctions()"><i class="fa-solid fa-check"></i> Validate</button>
-                        <div id="dbg-val" class="ok-t"></div>
-                    </div>
-                </div>
-            </div>
+      <div id="panel">
+        <!-- Mode Toggle -->
+        <div id="mode-toggle">
+          <span class="mode-label">Mode</span>
+          <button
+            class="mode-btn active"
+            data-mode="basic"
+            onclick="window.setUIMode('basic')"
+          >
+            Basic
+          </button>
+          <button
+            class="mode-btn"
+            data-mode="advanced"
+            onclick="window.setUIMode('advanced')"
+          >
+            Advanced
+          </button>
         </div>
 
-        <div id="cv-area">
-            <canvas id="c"></canvas>
-            <div id="zbadge">100%</div>
+        <div class="pane on" id="p-scene">
+          <div class="ph">
+            <h2>Scene</h2>
+            <p>Resolution &amp; sampling</p>
+          </div>
+          <div class="pb">
+            <!-- Resolution -->
+            <div class="sec">
+              <div class="sl">Resolution</div>
+              <div class="fr">
+                <div class="f">
+                  <label>Width</label>
+                  <input
+                    type="number"
+                    id="iw"
+                    value="1280"
+                    min="100"
+                    max="7680"
+                  />
+                </div>
+                <div class="f">
+                  <label>Height</label>
+                  <input
+                    type="number"
+                    id="ih"
+                    value="720"
+                    min="100"
+                    max="4320"
+                  />
+                </div>
+              </div>
+              <div class="pills">
+                <button class="pl pl-stretch on" onclick="setResolution(1280, 720, this)">720p</button>
+                <button class="pl pl-stretch" onclick="setResolution(1920, 1080, this)">1080p</button>
+                <button class="pl pl-stretch" onclick="setResolution(2560, 1440, this)">1440p</button>
+                <button class="pl pl-stretch" onclick="setResolution(3840, 2160, this)">4K</button>
+                <button class="pl pl-stretch" onclick="setResolution(5120, 2880, this)">5K</button>
+                <button class="pl pl-stretch" onclick="setResolution(7680, 4320, this)">8K</button>
+              </div>
+            </div>
+
+            <!-- Sampling -->
+            <div class="sec">
+              <div class="sl">Sampling</div>
+              <div class="fr">
+                <div class="f">
+                  <label>Iterations</label>
+                  <input
+                    type="number"
+                    id="iters"
+                    value="12000"
+                    min="10"
+                    max="200000"
+                  />
+                </div>
+                <div class="f">
+                  <label>Samples</label>
+                  <input
+                    type="number"
+                    id="samples"
+                    value="5000000"
+                    min="1000"
+                    step="50000"
+                  />
+                </div>
+              </div>
+              <div class="pills">
+                <button class="pl pl-stretch" onclick="setQuality('low', this)">Low</button>
+                <button class="pl pl-stretch on" onclick="setQuality('med', this)">Med</button>
+                <button class="pl pl-stretch" onclick="setQuality('high', this)">High</button>
+                <button class="pl pl-stretch" onclick="setQuality('ultra', this)">Ultra</button>
+              </div>
+            </div>
+
+            <!-- Render Controls -->
+            <div class="sec" style="align-items: stretch">
+              <button
+                class="btn primary"
+                style="width: 100%; justify-content: center"
+                onclick="window.startRender()"
+              >
+                <i class="fa-solid fa-play"></i> Start Render
+              </button>
+              <button
+                class="btn danger"
+                style="width: 100%; justify-content: center; margin-top: 8px"
+                onclick="window.stopRender()"
+              >
+                <i class="fa-solid fa-stop"></i> Stop
+              </button>
+            </div>
+
+            <!-- Advanced Toggle -->
+            <div
+              class="adv-toggle"
+              onclick="window.toggleAdvanced('scene-adv')"
+            >
+              <span>Advanced Options</span>
+              <i class="fa-solid fa-chevron-down" id="scene-adv-icon"></i>
+            </div>
+
+            <!-- Advanced Section -->
+            <div class="adv-body" id="scene-adv-body" style="display: none">
+              <!-- Camera -->
+              <div class="sec">
+                <div class="sl">Camera</div>
+                <div class="fr">
+                  <div class="f">
+                    <label>Zoom</label>
+                    <input
+                      type="number"
+                      id="zoom"
+                      value="1"
+                      min="0.01"
+                      step="0.05"
+                    />
+                  </div>
+                  <div class="f">
+                    <label>Center X</label>
+                    <input type="number" id="cx" value="0" step="0.05" />
+                  </div>
+                  <div class="f">
+                    <label>Center Y</label>
+                    <input type="number" id="cy" value="0" step="0.05" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Adaptive Tuning -->
+              <div class="sec">
+                <div
+                  class="sl collapsible"
+                  onclick="toggleSection(this)"
+                >
+                  Adaptive Tuning
+                </div>
+                <div class="sec-content">
+                  <!-- Enable toggle -->
+                  <div class="trow">
+                    <span class="tl">Enable adaptive</span>
+                    <label class="tsw">
+                      <input
+                        type="checkbox"
+                        id="at-enabled"
+                        onchange="window.onAdaptiveChange()"
+                      />
+                      <div class="ttr"></div>
+                      <div class="tth"></div>
+                    </label>
+                  </div>
+
+                  <!-- Variance Threshold -->
+                  <div class="f">
+                    <label class="at-label">Variance threshold</label>
+                    <div class="rr">
+                      <input
+                        type="range"
+                        id="at-var"
+                        min="0.001"
+                        max="0.05"
+                        value="0.008"
+                        step="0.001"
+                        oninput="
+                          document.getElementById('at-var-v').textContent =
+                            parseFloat(this.value).toFixed(3);
+                          window.onAdaptiveChange();
+                        "
+                      />
+                      <span id="at-var-v">0.008</span>
+                    </div>
+                    <div class="at-scale-row">
+                      <button
+                        class="at-scale"
+                        onclick="window.atVarPreset(0.001, this)"
+                      >
+                        Fine
+                      </button>
+                      <button
+                        class="at-scale on"
+                        onclick="window.atVarPreset(0.025, this)"
+                      >
+                        Balanced
+                      </button>
+                      <button
+                        class="at-scale"
+                        onclick="window.atVarPreset(0.05, this)"
+                      >
+                        Fast
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Aggressiveness -->
+                  <div class="f">
+                    <label class="at-label">Aggressiveness</label>
+                    <div class="rr">
+                      <input
+                        type="range"
+                        id="at-agg"
+                        min="1"
+                        max="8"
+                        value="1"
+                        step="1"
+                        oninput="
+                          document.getElementById('at-agg-v').textContent =
+                            this.value + '×';
+                          window.onAdaptiveChange();
+                        "
+                      />
+                      <span id="at-agg-v">1×</span>
+                    </div>
+                  </div>
+
+                  <!-- Hit Density -->
+                  <div class="f">
+                    <label class="at-label">Hit density</label>
+                    <div class="rr">
+                      <input
+                        type="range"
+                        id="at-hit"
+                        min="0.005"
+                        max="0.2"
+                        value="0.1"
+                        step="0.005"
+                        oninput="
+                          document.getElementById('at-hit-v').textContent =
+                            (parseFloat(this.value) * 100).toFixed(1) + '%';
+                          window.onAdaptiveChange();
+                        "
+                      />
+                      <span id="at-hit-v">10.0%</span>
+                    </div>
+                  </div>
+
+                  <!-- Chunk Size -->
+                  <div class="f">
+                    <label class="at-label">Chunk size</label>
+                    <div class="pills" id="at-chunk-pills">
+                      <button
+                        class="pl"
+                        onclick="window.atChunkPreset(0.05, this)"
+                      >
+                        0.05
+                      </button>
+                      <button
+                        class="pl on"
+                        onclick="window.atChunkPreset(0.1, this)"
+                      >
+                        0.1
+                      </button>
+                      <button
+                        class="pl"
+                        onclick="window.atChunkPreset(0.15, this)"
+                      >
+                        0.15
+                      </button>
+                      <button
+                        class="pl"
+                        onclick="window.atChunkPreset(0.2, this)"
+                      >
+                        0.2
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="br">
+                    <button class="btn ghost" onclick="window.resetAdaptive()">
+                      ↺ Defaults
+                    </button>
+                    <span
+                      id="at-status"
+                      style="font-size: 11px; color: var(--mu2)"
+                    ></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div id="bar">
-            <div id="bar-btns">
-                <button class="btn pri" onclick="startRender()"><i class="fa-solid fa-play"></i></button>
-                <button class="btn ghost" onclick="stopRender()"><i class="fa-solid fa-stop"></i></button>
-                <button class="btn dng" onclick="clearAll()"><i class="fa-solid fa-xmark"></i></button>
+        <div class="pane" id="p-fractal">
+          <div class="ph">
+            <h2>Fractal</h2>
+            <p>Formula &amp; parameters</p>
+          </div>
+          <div class="pb">
+            <!-- Core Section -->
+            <div class="sec">
+              <div class="sl">Presets</div>
+              <select
+                id="preset-select"
+                onchange="window.selectPreset(this.value)"
+                style="
+                  width: 100%;
+                  padding: 6px;
+                  background: var(--s3);
+                  border: 1px solid var(--b1);
+                  color: var(--tx);
+                  border-radius: var(--r);
+                  font-size: var(--fs0);
+                "
+              ></select>
             </div>
-            <div id="bar-mid">
-                <div id="prog-wrap"><div id="prog"></div></div>
-                <div id="bar-status">Ready — click <i class="fa-solid fa-play"></i> to render</div>
-                <div id="render-stats" style="display:none;font-size:10px;color:#888;margin-left:10px;"></div>
+
+            <div class="sec" style="align-items: stretch">
+              <button
+                class="btn primary"
+                style="width: 100%; justify-content: center"
+                onclick="window.applyFractalBuilder()"
+              >
+                Apply &amp; Render
+              </button>
+              <button
+                class="btn"
+                style="width: 100%; justify-content: center; margin-top: 8px"
+                onclick="window.randomFractal()"
+              >
+                <i class="fa-solid fa-shuffle"></i> Create Random
+              </button>
+              <button
+                class="btn"
+                style="width: 100%; justify-content: center; margin-top: 8px"
+                onclick="window.showSaveRow()"
+              >
+                <i class="fa-solid fa-floppy-disk"></i> Save Preset
+              </button>
+              <button
+                class="btn danger"
+                style="width: 100%; justify-content: center; margin-top: 8px"
+                onclick="window.deleteCurrentPreset()"
+              >
+                <i class="fa-solid fa-trash"></i> Delete Preset
+              </button>
+              <div
+                id="save-row"
+                class="fr"
+                style="display: none; margin-top: 8px"
+              >
+                <input type="text" id="pname" placeholder="Preset name…" />
+                <button class="btn primary" onclick="window.confirmSave()">
+                  Save
+                </button>
+              </div>
             </div>
-            <div id="bar-right">
-                <div id="thr-info"></div>
-                <button class="btn ghost" onclick="saveImage()"><i class="fa-solid fa-download"></i></button>
+
+            <!-- Julia Mode -->
+            <div class="sec">
+              <div class="sl">Julia Mode</div>
+              <div class="trow">
+                <span class="tl">Enable Julia</span>
+                <label class="tsw">
+                  <input
+                    type="checkbox"
+                    id="fb-ai"
+                    onchange="window.updateFractalBuilder()"
+                  />
+                  <div class="ttr"></div>
+                  <div class="tth"></div>
+                </label>
+              </div>
+              <div id="fb-cr" class="fr" style="display: none; margin-top: 8px">
+                <div class="f">
+                  <label>X</label>
+                  <input type="number" id="fb-cx" value="0" step="0.05" />
+                </div>
+                <div class="f">
+                  <label>Y</label>
+                  <input type="number" id="fb-cy" value="0.5" step="0.05" />
+                </div>
+              </div>
             </div>
+
+            <!-- Formula Type -->
+            <div class="sec">
+              <div class="sl">Formula Type</div>
+              <select id="fb-t" onchange="window.updateFractalBuilder()">
+                <option value="0">Mandelbrot (z² + c)</option>
+                <option value="1">Power (zⁿ + c)</option>
+                <option value="2">Burning Ship (|z|² + c)</option>
+                <option value="3">Tricorn (z̄² + c)</option>
+                <option value="4">Celtic (|Re| + c)</option>
+                <option value="5">Sine (sin(z) + c)</option>
+              </select>
+            </div>
+
+            <!-- Parameters -->
+            <div class="sec">
+              <div class="sl">Parameters</div>
+              <div class="fr" style="flex-wrap: wrap; gap: 8px">
+                <div class="f" style="flex: 1; min-width: 120px">
+                  <label>Power</label>
+                  <div class="rr">
+                    <input
+                      type="range"
+                      id="fb-p"
+                      min="2"
+                      max="8"
+                      value="2"
+                      step="0.5"
+                      oninput="
+                        fbpv.textContent = parseFloat(this.value).toFixed(1);
+                        window.updateFractalBuilder();
+                      "
+                    />
+                    <span id="fbpv">2.0</span>
+                  </div>
+                </div>
+                <div class="f" style="flex: 1; min-width: 120px">
+                  <label>Escape r</label>
+                  <div class="rr">
+                    <input
+                      type="range"
+                      id="fb-e"
+                      min="2"
+                      max="20"
+                      value="10"
+                      step="0.5"
+                      oninput="
+                        fbev.textContent = parseFloat(this.value).toFixed(1);
+                        window.updateFractalBuilder();
+                      "
+                    />
+                    <span id="fbev">10.0</span>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="fr"
+                style="flex-wrap: wrap; gap: 8px; margin-top: 8px"
+              >
+                <div class="f" style="flex: 1; min-width: 120px">
+                  <label>Rotation°</label>
+                  <div class="rr">
+                    <input
+                      type="range"
+                      id="fb-r"
+                      min="0"
+                      max="360"
+                      value="0"
+                      step="1"
+                      oninput="
+                        fbrv.textContent = this.value;
+                        window.updateFractalBuilder();
+                      "
+                    />
+                    <span id="fbrv">0</span>
+                  </div>
+                </div>
+                <div class="f" style="flex: 1; min-width: 120px">
+                  <label>Orbit Z</label>
+                  <div class="rr">
+                    <input
+                      type="range"
+                      id="fb-s"
+                      min="0"
+                      max="4"
+                      value="0"
+                      step="1"
+                      oninput="
+                        fbsv.textContent = this.value;
+                        window.updateFractalBuilder();
+                      "
+                    />
+                    <span id="fbsv">0</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Advanced Toggle -->
+            <div
+              class="adv-toggle"
+              onclick="window.toggleAdvanced('fractal-adv')"
+            >
+              <span>Advanced Options</span>
+              <i class="fa-solid fa-chevron-down" id="fractal-adv-icon"></i>
+            </div>
+
+            <!-- Advanced Section -->
+            <div class="adv-body" id="fractal-adv-body" style="display: none">
+              <!-- Custom Functions -->
+              <div class="sec">
+                <div class="sl">Custom Filter Function</div>
+                <textarea
+                  id="filterCode"
+                  rows="5"
+                  spellcheck="false"
+                ></textarea>
+                <div id="ferr" class="err-t"></div>
+              </div>
+
+              <div class="sec">
+                <div class="sl">Custom Tracer Function</div>
+                <textarea
+                  id="tracerCode"
+                  rows="5"
+                  spellcheck="false"
+                ></textarea>
+                <div id="terr" class="err-t"></div>
+              </div>
+
+              <div class="sec">
+                <div class="br">
+                  <button class="btn" onclick="window.validateFunctions()">
+                    ✓ Validate
+                  </button>
+                  <button class="btn" onclick="window.showSaveRow()">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Preset
+                  </button>
+                  <button class="btn" onclick="window.resetFractalBuilder()">
+                    ↺ Reset
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <div class="pane" id="p-color">
+          <div class="ph">
+            <h2>Color</h2>
+            <p>Line color &amp; adjustments</p>
+          </div>
+          <div class="pb">
+            <!-- Base Color -->
+            <div class="sec">
+              <div class="sl">Base Color</div>
+              <div
+                class="cpprev"
+                id="lcprev"
+                style="
+                  height: 40px;
+                  margin-bottom: 8px;
+                  background: rgb(243, 175, 50);
+                "
+              ></div>
+              <div class="f">
+                <label>H</label>
+                <div class="rr">
+                  <input
+                    type="range"
+                    id="lH"
+                    min="0"
+                    max="360"
+                    value="33"
+                    step="1"
+                    oninput="
+                      window.syncLineHSL();
+                      document.getElementById('qm-hue').value = this.value;
+                      document.getElementById('qm-hue-v').textContent = this.value + '°';
+                    "
+                  />
+                  <span id="lHv">33°</span>
+                </div>
+              </div>
+              <div class="f">
+                <label>S</label>
+                <div class="rr">
+                  <input
+                    type="range"
+                    id="lS"
+                    min="0"
+                    max="100"
+                    value="100"
+                    step="1"
+                    oninput="window.syncLineHSL()"
+                  />
+                  <span id="lSv">100%</span>
+                </div>
+              </div>
+              <div class="f">
+                <label>I</label>
+                <div class="rr">
+                  <input
+                    type="range"
+                    id="lL"
+                    min="10"
+                    max="100"
+                    value="60"
+                    step="1"
+                    oninput="window.syncLineHSL()"
+                  />
+                  <span id="lLv">60%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Adjustments -->
+            <div class="sec">
+              <div class="sl">Adjustments</div>
+              <div class="f">
+                <label>Saturation</label>
+                <div class="rr">
+                  <input
+                    type="range"
+                    id="color-sat"
+                    min="0"
+                    max="200"
+                    value="100"
+                    step="1"
+                    oninput="window.updateColorSaturation(this.value)"
+                  />
+                  <span id="color-sat-val">100%</span>
+                </div>
+              </div>
+              <div class="f">
+                <label>Contrast</label>
+                <div class="rr">
+                  <input
+                    type="range"
+                    id="contrast"
+                    min="0.2"
+                    max="3"
+                    value="1"
+                    step="0.05"
+                    oninput="
+                      coV.textContent = parseFloat(this.value).toFixed(2);
+                      document.getElementById('qm-contrast').value = this.value;
+                      document.getElementById('qm-contrast-v').textContent = parseFloat(this.value).toFixed(2);
+                      window.lazyRepaint();
+                    "
+                  />
+                  <span id="coV">1.00</span>
+                </div>
+              </div>
+              <div class="f">
+                <label>Gamma</label>
+                <div class="rr">
+                  <input
+                    type="range"
+                    id="gamma"
+                    min="0.1"
+                    max="3"
+                    value="1"
+                    step="0.05"
+                    oninput="
+                      gV.textContent = parseFloat(this.value).toFixed(2);
+                      document.getElementById('qm-gamma').value = this.value;
+                      document.getElementById('qm-gamma-v').textContent = parseFloat(this.value).toFixed(2);
+                      window.lazyRepaint();
+                    "
+                  />
+                  <span id="gV">1.00</span>
+                </div>
+              </div>
+              <div class="f">
+                <label>Vignette</label>
+                <div class="rr">
+                  <input
+                    type="range"
+                    id="vignette"
+                    min="0"
+                    max="1"
+                    value="0"
+                    step="0.05"
+                    oninput="
+                      viV.textContent = parseFloat(this.value).toFixed(2);
+                      window.lazyRepaint();
+                    "
+                  />
+                  <span id="viV">0.00</span>
+                </div>
+              </div>
+              <div class="trow" style="margin-top: 6px">
+                <span class="tl">Invert</span>
+                <label class="tsw">
+                  <input
+                    type="checkbox"
+                    id="invert"
+                    onchange="window.lazyRepaint()"
+                  />
+                  <div class="ttr"></div>
+                  <div class="tth"></div>
+                </label>
+              </div>
+              <div class="f" style="margin-top: 8px">
+                <label>Blur / denoise</label>
+                <div class="rr">
+                  <input
+                    type="range"
+                    id="blur"
+                    min="0"
+                    max="5"
+                    value="0"
+                    step="0.5"
+                    oninput="
+                      blV.textContent = parseFloat(this.value).toFixed(1);
+                      window.lazyRepaint();
+                    "
+                  />
+                  <span id="blV">0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pane" id="p-fx">
+          <div class="ph">
+            <h2>Post-Processing</h2>
+            <p>Enhancement &amp; effects</p>
+          </div>
+          <div class="pb">
+            <!-- Symmetry -->
+            <div class="sec">
+              <div class="sl">Symmetry</div>
+              <div class="sym-opts">
+                <button
+                  class="sym-btn on"
+                  id="sym-none"
+                  onclick="setSymmetry('none', this)"
+                >
+                  None
+                </button>
+                <button
+                  class="sym-btn"
+                  id="sym-h"
+                  onclick="setSymmetry('h', this)"
+                >
+                  Horizontal
+                </button>
+                <button
+                  class="sym-btn"
+                  id="sym-v"
+                  onclick="setSymmetry('v', this)"
+                >
+                  Vertical
+                </button>
+                <button
+                  class="sym-btn"
+                  id="sym-4way"
+                  onclick="setSymmetry('4way', this)"
+                >
+                  4-way
+                </button>
+                <button
+                  class="sym-btn"
+                  id="sym-alt4way"
+                  onclick="setSymmetry('alt4way', this)"
+                >
+                  Alternative 4-way
+                </button>
+              </div>
+              <input type="hidden" id="symH" value="false" />
+              <input type="hidden" id="symV" value="false" />
+              <input type="hidden" id="symOrder" value="none" />
+            </div>
+
+            <div class="sec">
+              <div class="sl collapsible" onclick="toggleSection(this)">
+                Tone Mapping
+              </div>
+              <div class="sec-content">
+                <div class="pills" style="margin-bottom: 8px">
+                  <button class="pl on" onclick="setToneMap('aces', this)">
+                    ACES
+                  </button>
+                  <button class="pl" onclick="setToneMap('reinhard', this)">
+                    Reinhard
+                  </button>
+                  <button class="pl" onclick="setToneMap('filmic', this)">
+                    Filmic
+                  </button>
+                </div>
+                <input type="hidden" id="toneMap" value="aces" />
+                <div class="f">
+                  <label>Tone strength</label>
+                  <div class="rr">
+                    <input
+                      type="range"
+                      id="toneStrength"
+                      min="0"
+                      max="1"
+                      value="1"
+                      step="0.05"
+                      oninput="
+                        tsV.textContent = parseFloat(this.value).toFixed(2);
+                        lazyRepaint();
+                      "
+                    />
+                    <span id="tsV">1.00</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="sec">
+              <div class="sl collapsible" onclick="toggleSection(this)">
+                Exposure
+              </div>
+              <div class="sec-content">
+                <div class="f">
+                  <label>Exposure</label>
+                  <div class="rr">
+                    <input
+                      type="range"
+                      id="exposure"
+                      min="0.1"
+                      max="5"
+                      value="2"
+                      step="0.05"
+                      oninput="
+                        exV.textContent = parseFloat(this.value).toFixed(2);
+                        document.getElementById('qm-exposure').value = this.value;
+                        document.getElementById('qm-exposure-v').textContent = parseFloat(this.value).toFixed(2);
+                        lazyRepaint();
+                      "
+                    />
+                    <span id="exV">2.00</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="sec">
+              <div class="sl collapsible" onclick="toggleSection(this)">
+                Bloom
+              </div>
+              <div class="sec-content">
+                <div class="trow" style="margin-bottom: 6px">
+                  <span class="tl">Enable bloom</span>
+                  <label class="tsw">
+                    <input
+                      type="checkbox"
+                      id="bloomEnabled"
+                      onchange="lazyRepaint()"
+                    />
+                    <div class="ttr"></div>
+                    <div class="tth"></div>
+                  </label>
+                </div>
+                <div class="f">
+                  <label>Threshold</label>
+                  <div class="rr">
+                    <input
+                      type="range"
+                      id="bloomThreshold"
+                      min="0.1"
+                      max="1"
+                      value="0.5"
+                      step="0.05"
+                      oninput="
+                        btV.textContent = parseFloat(this.value).toFixed(2);
+                        lazyRepaint();
+                      "
+                    />
+                    <span id="btV">0.50</span>
+                  </div>
+                </div>
+                <div class="f">
+                  <label>Intensity</label>
+                  <div class="rr">
+                    <input
+                      type="range"
+                      id="bloomIntensity"
+                      min="0.1"
+                      max="3"
+                      value="0.5"
+                      step="0.05"
+                      oninput="
+                        biV.textContent = parseFloat(this.value).toFixed(2);
+                        lazyRepaint();
+                      "
+                    />
+                    <span id="biV">0.50</span>
+                  </div>
+                </div>
+                <div class="f">
+                  <label>Blur radius</label>
+                  <div class="rr">
+                    <input
+                      type="range"
+                      id="bloomRadius"
+                      min="4"
+                      max="64"
+                      value="16"
+                      step="4"
+                      oninput="
+                        brV.textContent = this.value;
+                        lazyRepaint();
+                      "
+                    />
+                    <span id="brV">16</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="sec">
+              <div class="sl collapsible" onclick="toggleSection(this)">
+                Microcontrast
+              </div>
+              <div class="sec-content">
+                <div class="trow" style="margin-bottom: 6px">
+                  <span class="tl">Enable microcontrast</span>
+                  <label class="tsw">
+                    <input
+                      type="checkbox"
+                      id="microEnabled"
+                      onchange="lazyRepaint()"
+                    />
+                    <div class="ttr"></div>
+                    <div class="tth"></div>
+                  </label>
+                </div>
+                <div class="f">
+                  <label>Strength</label>
+                  <div class="rr">
+                    <input
+                      type="range"
+                      id="microStrength"
+                      min="0"
+                      max="1"
+                      value="0.3"
+                      step="0.05"
+                      oninput="
+                        msV.textContent = parseFloat(this.value).toFixed(2);
+                        lazyRepaint();
+                      "
+                    />
+                    <span id="msV">0.30</span>
+                  </div>
+                </div>
+                <div class="f">
+                  <label>Radius</label>
+                  <div class="rr">
+                    <input
+                      type="range"
+                      id="microRadius"
+                      min="2"
+                      max="16"
+                      value="4"
+                      step="1"
+                      oninput="
+                        mrV.textContent = this.value;
+                        lazyRepaint();
+                      "
+                    />
+                    <span id="mrV">4</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pane" id="p-debug">
+          <div class="ph">
+            <h2>Debug</h2>
+            <p>Test &amp; inspect functions</p>
+          </div>
+          <div class="pb">
+            <!-- Core Section -->
+            <div class="sec">
+              <div class="sl">Test Point</div>
+              <div class="fr">
+                <div class="f">
+                  <label>cx</label>
+                  <input type="number" id="dbg-cx" value="-0.5" step="0.05" />
+                </div>
+                <div class="f">
+                  <label>cy</label>
+                  <input type="number" id="dbg-cy" value="0.3" step="0.05" />
+                </div>
+                <div class="f">
+                  <label>Max steps</label>
+                  <input
+                    type="number"
+                    id="dbg-steps"
+                    value="20"
+                    min="1"
+                    max="200"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="sec">
+              <div class="sl">Run</div>
+              <div class="br">
+                <button class="btn" onclick="window.runDebug(false)">
+                  Run filter
+                </button>
+                <button class="btn" onclick="window.runDebug(true)">
+                  Trace path
+                </button>
+                <button class="btn ghost" onclick="window.clearDebug()">
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            <div class="sec">
+              <div class="sl">Output</div>
+              <div id="dbg-output">Run a function to inspect it.</div>
+            </div>
+
+            <div class="sec">
+              <div class="sl">Validate</div>
+              <button class="btn" onclick="window.validateFunctions()">
+                <i class="fa-solid fa-check"></i> Validate
+              </button>
+              <div id="dbg-val" class="ok-t"></div>
+            </div>
+
+            <!-- Advanced Toggle -->
+            <div
+              class="adv-toggle"
+              onclick="window.toggleAdvanced('debug-adv')"
+            >
+              <span>Advanced Options</span>
+              <i class="fa-solid fa-chevron-down" id="debug-adv-icon"></i>
+            </div>
+
+            <!-- Advanced Section -->
+            <div class="adv-body" id="debug-adv-body" style="display: none">
+              <div class="sec">
+                <div class="sl">Performance</div>
+                <div id="debug-stats" class="dbg-stats">
+                  <div class="trow">
+                    <span class="tl">Last filter time</span>
+                    <span id="dbg-filter-time">—</span>
+                  </div>
+                  <div class="trow">
+                    <span class="tl">Last trace time</span>
+                    <span id="dbg-trace-time">—</span>
+                  </div>
+                  <div class="trow">
+                    <span class="tl">Points traced</span>
+                    <span id="dbg-points">—</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sec">
+                <div class="sl">Logs</div>
+                <div id="debug-logs" class="dbg-logs">
+                  <div class="ok-t">No logs yet.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="cv-area">
+        <canvas id="c"></canvas>
+        <div id="zbadge">100%</div>
+      </div>
+
+      <div id="bar">
+        <div id="bar-btns">
+          <button class="btn ghost" onclick="clearAll()">
+            <i class="fa-solid fa-xmark"></i> Clear
+          </button>
+          <button class="btn ghost" onclick="saveImage()">
+            <i class="fa-solid fa-download"></i> PNG
+          </button>
+          <button
+            class="btn ghost on"
+            id="stats-toggle"
+            onclick="window.toggleStats?.()"
+          >
+            <i class="fa-solid fa-chart-simple"></i> Stats
+          </button>
+        </div>
+        <div id="bar-mid">
+          <div id="prog-wrap"><div id="prog"></div></div>
+          <div id="bar-status">Ready</div>
+        </div>
+        <div id="bar-right">
+          <div id="thr-info"></div>
+        </div>
+      </div>
+
+      <div
+        id="render-stats-panel"
+        class="floating-panel show"
+        data-panel="stats"
+      >
+        <div class="panel-drag-handle">
+          <span class="panel-title">RENDER STATS</span>
+          <div class="panel-controls">
+            <button
+              class="panel-btn"
+              onclick="togglePanelMinimize('stats')"
+              title="Minimize"
+            >
+              <i class="fa-solid fa-minus"></i>
+            </button>
+            <button
+              class="panel-btn"
+              onclick="closePanel('stats')"
+              title="Close"
+            >
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        </div>
+        <div class="panel-content">
+          <div class="stats-threads">
+            <div class="stats-threads-label">
+              <span>Threads</span>
+              <span id="threads-value">auto</span>
+            </div>
+            <input
+              type="range"
+              id="threads-slider"
+              min="1"
+              max="16"
+              value="0"
+              oninput="window.updateThreads(this.value)"
+            />
+          </div>
+          <div id="rst-time">Time: 0.0s</div>
+          <div id="rst-progress">Progress: 0%</div>
+          <div id="rst-hits">Total hits: 0</div>
+          <div class="stats-section">WORKERS</div>
+          <div id="rst-workers"></div>
+        </div>
+      </div>
+
+      <!-- Quick Controls Floating Panel -->
+      <div
+        id="quick-controls-panel"
+        class="floating-panel show"
+        data-panel="quick"
+      >
+        <div class="panel-drag-handle">
+          <span class="panel-title">QUICK CONTROLS</span>
+          <div class="panel-controls">
+            <button
+              class="panel-btn"
+              onclick="togglePanelMinimize('quick')"
+              title="Minimize"
+            >
+              <i class="fa-solid fa-minus"></i>
+            </button>
+          </div>
+        </div>
+        <div class="panel-content">
+          <!-- Quick Adjustments -->
+          <div class="qm-section">
+            <div class="qm-label">Adjustments</div>
+            <div class="qm-row">
+              <label>Gamma</label>
+              <div class="qm-rr">
+                <input
+                  type="range"
+                  id="qm-gamma"
+                  min="0.1"
+                  max="3"
+                  value="1"
+                  step="0.05"
+                  oninput="window.updateQuickGamma(this.value)"
+                />
+                <span id="qm-gamma-v">1.00</span>
+              </div>
+            </div>
+            <div class="qm-row">
+              <label>Exposure</label>
+              <div class="qm-rr">
+                <input
+                  type="range"
+                  id="qm-exposure"
+                  min="0.1"
+                  max="5"
+                  value="2"
+                  step="0.05"
+                  oninput="window.updateQuickExposure(this.value)"
+                />
+                <span id="qm-exposure-v">2.00</span>
+              </div>
+            </div>
+            <div class="qm-row">
+              <label>Contrast</label>
+              <div class="qm-rr">
+                <input
+                  type="range"
+                  id="qm-contrast"
+                  min="0.2"
+                  max="3"
+                  value="1"
+                  step="0.05"
+                  oninput="window.updateQuickContrast(this.value)"
+                />
+                <span id="qm-contrast-v">1.00</span>
+              </div>
+            </div>
+            <div class="qm-row">
+              <label>Hue</label>
+              <div class="qm-rr">
+                <input
+                  type="range"
+                  id="qm-hue"
+                  min="0"
+                  max="360"
+                  value="33"
+                  step="1"
+                  oninput="window.updateQuickHue(this.value)"
+                />
+                <span id="qm-hue-v">33°</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Symmetry -->
+          <div class="qm-section">
+            <div class="qm-label">Symmetry</div>
+            <div class="qm-sym-grid">
+              <button
+                class="qm-sym"
+                id="qm-sym-h"
+                onclick="window.toggleQuickSymmetry('h', this)"
+              >
+                Horizontal
+              </button>
+              <button
+                class="qm-sym"
+                id="qm-sym-v"
+                onclick="window.toggleQuickSymmetry('v', this)"
+              >
+                Vertical
+              </button>
+              <button
+                class="qm-sym"
+                id="qm-sym-4way"
+                onclick="window.toggleQuickSymmetry('4way', this)"
+              >
+                4-way
+              </button>
+              <button
+                class="qm-sym"
+                id="qm-sym-alt4way"
+                onclick="window.toggleQuickSymmetry('alt4way', this)"
+              >
+                4-way alt
+              </button>
+            </div>
+          </div>
+
+          <!-- Render Button -->
+          <button class="qm-render-btn" onclick="window.startRender()">
+            Render
+          </button>
+
+          <!-- Actions -->
+          <div class="qm-section">
+            <div class="qm-label">Actions</div>
+            <div class="qm-actions">
+              <button class="qm-btn" onclick="window.clearAll()">Clear</button>
+              <button class="qm-btn" onclick="window.saveImage()">
+                Save PNG
+              </button>
+              <button class="qm-btn" onclick="window.resetView()">
+                Reset View
+              </button>
+              <button class="qm-btn" onclick="window.randomFractal()">
+                Random
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pane page-pane" id="p-learn">
+        <div class="ph">
+          <div class="ph-text">
+            <h2>Learn</h2>
+            <p>What you're actually making</p>
+          </div>
+          <button
+            class="page-close"
+            onclick="switchTab('scene', document.getElementById('t-scene'))"
+          >
+            Close
+          </button>
+        </div>
+        <div class="pb">
+          <div class="sec">
+            <h3>What is a Fractal?</h3>
+            <p>
+              A <span class="hl">fractal</span> is a pattern that repeats at
+              every scale. Zoom into a coastline on a map — it looks the same at
+              any level. Fractals work the same way: simple math rules, infinite
+              complexity.
+            </p>
+            <p>
+              The <span class="hl">Mandelbrot</span> set takes a point
+              <code>(x, y)</code>, plugs it into <code>z = z² + c</code>, and
+              repeats. If the numbers stay small, the point is "inside." If they
+              blow up, it's "outside" — and the path it takes before blowing up
+              is what we trace.
+            </p>
+          </div>
+
+          <div class="sec">
+            <h3>Buddhabrot</h3>
+            <p>
+              Instead of coloring each point, we trace the
+              <span class="hl2">escape paths</span> of thousands of random
+              points and plot where they go. Points that visit the same spot
+              more often get brighter. This is why we need
+              <span class="hl">samples</span> — more samples = more paths traced
+              = smoother image.
+            </p>
+          </div>
+
+          <div class="sec">
+            <h3>Julia Sets</h3>
+            <p>
+              Every point in the Mandelbrot set has a matching
+              <span class="hl">Julia set</span>. The Mandelbrot set is basically
+              a map of all possible Julia sets. Turn on Julia mode, pick a
+              point, and you'll see the fractal that point "belongs to."
+            </p>
+            <p>
+              Points inside the Mandelbrot set make connected Julia sets. Points
+              outside make dust.
+            </p>
+          </div>
+
+          <div class="sec">
+            <h3>Formula Types</h3>
+            <ul>
+              <li>
+                <strong><span class="hl">Mandelbrot</span></strong> — the
+                classic. <code>z² + c</code>
+              </li>
+              <li>
+                <strong><span class="hl">Power</span></strong> —
+                <code>zⁿ + c</code>. Higher power = more arms, more symmetry
+              </li>
+              <li>
+                <strong><span class="hl">Burning Ship</span></strong> — uses
+                absolute values. Makes flame-like shapes
+              </li>
+              <li>
+                <strong><span class="hl">Tricorn</span></strong> — flips the
+                imaginary part. 3-fold symmetric patterns
+              </li>
+              <li>
+                <strong><span class="hl">Celtic</span></strong> — absolute value
+                on the real part only. Knotted look
+              </li>
+              <li>
+                <strong><span class="hl">Sine</span></strong> — uses
+                <code>sin(z)</code> instead of <code>z²</code>. Organic,
+                biological patterns
+              </li>
+            </ul>
+          </div>
+
+          <div class="sec">
+            <h3>Filter vs Tracer</h3>
+            <p>
+              <strong><span class="hl2">Filter</span></strong> decides if a
+              point is interesting — should we trace it? Returns true/false.
+            </p>
+            <p>
+              <strong><span class="hl2">Tracer</span></strong> runs the actual
+              iteration and emits <code>(x, y)</code> positions along the path.
+              These are the dots you see in the final image.
+            </p>
+            <p>
+              You can write your own — try changing the escape radius, adding
+              sine waves, or flipping signs halfway through.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="pane page-pane" id="p-perf">
+        <div class="ph">
+          <div class="ph-text">
+            <h2>Guide</h2>
+            <p>How to get good results</p>
+          </div>
+          <button
+            class="page-close"
+            onclick="switchTab('scene', document.getElementById('t-scene'))"
+          >
+            Close
+          </button>
+        </div>
+        <div class="pb">
+          <div class="sec">
+            <h3>Iterations vs Samples</h3>
+            <p>
+              <strong>Iterations</strong> = detail depth. How many steps each
+              point is allowed to take before giving up. More
+              <span class="hl">iterations</span> = more detail in complex areas.
+              Going from 8k to 20k reveals tiny spirals and filaments. Past 50k
+              usually gives diminishing returns unless you're zoomed way in.
+            </p>
+            <p>
+              <strong>Samples</strong> = image quality. How many random starting
+              points we trace. More <span class="hl">samples</span> = smoother,
+              less noisy image. Think of it like exposure time on a camera. Low
+              = grainy. High = clean.
+            </p>
+            <p>
+              Rule of thumb: crank <span class="hl">samples</span>, adjust
+              <span class="hl">iterations</span> based on how complex your
+              fractal is.
+            </p>
+          </div>
+
+          <div class="sec">
+            <h3>Adaptive Sampling</h3>
+            <p>
+              Instead of tracing every area equally,
+              <span class="hl">adaptive</span> mode does a quick low-res pass
+              first. Areas with lots of activity get more detail. Empty areas
+              get skipped. Saves a ton of time.
+            </p>
+            <ul>
+              <li>
+                <strong>Variance threshold</strong> — how "busy" an area needs
+                to be before it gets extra passes. Lower = more sensitive,
+                slower, cleaner.
+              </li>
+              <li>
+                <strong>Passes</strong> — how many extra times to re-trace busy
+                areas. More passes = smoother but slower.
+              </li>
+              <li>
+                <strong>Hit density</strong> — what percentage of points in a
+                chunk must hit before it triggers refinement.
+              </li>
+              <li>
+                <strong>Chunk size</strong> — how big each area is. Smaller
+                chunks = more precise allocation but more overhead.
+              </li>
+            </ul>
+          </div>
+
+          <div class="sec">
+            <h3>Render Stats</h3>
+            <p>
+              The stats panel (top right, toggle with the Stats button) shows
+              what's going on:
+            </p>
+            <ul>
+              <li>
+                <strong>Time</strong> — how long the render has been running.
+              </li>
+              <li>
+                <strong>Progress</strong> — percentage of cells completed.
+              </li>
+              <li>
+                <strong>Total hits</strong> — how many path points were
+                recorded. More = denser image.
+              </li>
+              <li>
+                <strong>Workers</strong> — each thread. Shows if it's running,
+                done, or idle. The speed stat tells you how fast each thread is.
+              </li>
+            </ul>
+          </div>
+
+          <div class="sec">
+            <h3>Threads</h3>
+            <p>
+              Set to "auto" to use all available CPU cores. You can limit it if
+              you want to keep your computer usable while rendering. Each thread
+              works on a chunk of the image independently.
+            </p>
+          </div>
+
+          <div class="sec">
+            <h3>Effects & Symmetry</h3>
+            <p>
+              The <span class="hl">FX tab</span> has tone mapping, bloom,
+              microcontrast, and vignette. These don't change the render —
+              they're <span class="hl2">post-processing</span>, so you can tweak
+              them instantly without re-rendering.
+            </p>
+            <ul>
+              <li>
+                <strong><span class="hl2">Bloom</span></strong> — makes bright
+                areas glow. Crank intensity and radius for dreamy looks.
+                Threshold controls what counts as "bright."
+              </li>
+              <li>
+                <strong><span class="hl2">Microcontrast</span></strong> —
+                sharpens fine detail without touching the overall image. Like a
+                local contrast boost. Works great on filaments.
+              </li>
+              <li>
+                <strong><span class="hl2">Tone mapping</span></strong> — ACES is
+                punchy and cinematic. Reinhard is softer. Filmic is balanced.
+                Try them all.
+              </li>
+            </ul>
+            <p>
+              <strong><span class="hl">Symmetry</span></strong> is where things
+              get wild. Horizontal and vertical flip the render. 4-way combines
+              both — every quadrant mirrors the others. Alternative 4-way does
+              horizontal first, then vertical, which gives a different feel. Try
+              symmetry on a Burning Ship or Celtic fractal — instant mandala.
+            </p>
+            <p>
+              The <span class="hl">Quick Controls</span> panel (press
+              <code>Q</code>) has gamma, exposure, contrast, and hue — tweak
+              these while watching the render update live.
+              <span class="hl">Hue</span> shifts the color without re-rendering.
+            </p>
+          </div>
+
+          <div class="sec">
+            <h3>Quick Tips</h3>
+            <ul>
+              <li>
+                Start with <span class="hl">Med</span> quality to find a
+                composition, then go High/Ultra for the final render.
+              </li>
+              <li>
+                Use <span class="hl">adaptive</span> sampling — it's almost
+                always faster.
+              </li>
+              <li>
+                <span class="hl2">Bloom</span> +
+                <span class="hl2">microcontrast</span> is the easiest way to
+                make renders look pro.
+              </li>
+              <li>
+                Save presets you like. Presets save the formula, not the
+                effects.
+              </li>
+              <li>
+                The <span class="hl">Debugger</span> tab lets you test your
+                filter/tracer on a single point before committing to a full
+                render.
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script type="module">
-        import * as app from './js/main.js';
-        
-        // Expose functions globally for inline HTML handlers
-        window.switchTab = app.switchTab;
-        window.setQuality = app.setQuality;
-        window.setResolution = app.setResolution;
-        window.setGridDiv = app.setGridDiv;
-        window.selectPreset = app.selectPreset;
-        window.deleteCustomPreset = app.deleteCustomPreset;
-        window.showSaveRow = app.showSaveRow;
-        window.confirmSave = app.confirmSave;
-        window.validateFunctions = app.validateFunctions;
-        window.syncLineHSL = app.syncLineHSL;
-        window.updateFractalBuilder = app.updateFractalBuilder;
-        window.applyFractalBuilder = app.applyFractalBuilder;
-        window.randomFractal = app.randomFractal;
-        window.runDebug = app.runDebug;
-        window.clearDebug = app.clearDebug;
-        window.resetView = app.resetView;
-        window.triggerPaint = app.triggerPaint;
-        window.lazyRepaint = app.lazyRepaint;
-        window.clearAll = app.clearAll;
-        window.saveImage = app.saveImage;
-        window.startRender = app.startRender;
-        window.stopRender = app.stopRender;
-        window.setStatus = app.setStatus;
-        window.setProgress = app.setProgress;
-        window.init = app.init;
-        window.canvas = app.canvas;
-        window.ctx = app.ctx;
+      import * as app from "./js/main.js";
+
+      // Expose functions globally for inline HTML handlers
+      window.switchTab = app.switchTab;
+      window.setQuality = app.setQuality;
+      window.setResolution = app.setResolution;
+      window.selectPreset = app.selectPreset;
+      window.deleteCustomPreset = app.deleteCustomPreset;
+      window.deleteCurrentPreset = app.deleteCurrentPreset;
+      window.showSaveRow = app.showSaveRow;
+      window.confirmSave = app.confirmSave;
+      window.validateFunctions = app.validateFunctions;
+      window.syncLineHSL = app.syncLineHSL;
+      window.updateFractalBuilder = app.updateFractalBuilder;
+      window.applyFractalBuilder = app.applyFractalBuilder;
+      window.randomFractal = app.randomFractal;
+      window.resetFractalBuilder = app.resetFractalBuilder;
+      window.runDebug = app.runDebug;
+      window.clearDebug = app.clearDebug;
+      window.resetView = app.resetView;
+      window.triggerPaint = app.triggerPaint;
+      window.lazyRepaint = app.lazyRepaint;
+      window.clearAll = app.clearAll;
+      window.saveImage = app.saveImage;
+      window.startRender = app.startRender;
+      window.stopRender = app.stopRender;
+      window.setStatus = app.setStatus;
+      window.setProgress = app.setProgress;
+      window.toggleStats = app.toggleStats;
+      window.init = app.init;
+      window.onAdaptiveChange = app.onAdaptiveChange;
+      window.atVarPreset = app.atVarPreset;
+      window.atChunkPreset = app.atChunkPreset;
+      window.resetAdaptive = app.resetAdaptive;
+      window.setSymmetry = app.setSymmetry;
+      window.setToneMap = app.setToneMap;
+      window.updateColorSaturation = app.updateColorSaturation;
+      window.toggleSection = app.toggleSection;
+      window.toggleAdvanced = app.toggleAdvanced;
+      window.togglePanelMinimize = app.togglePanelMinimize;
+      window.closePanel = app.closePanel;
+      window.setUIMode = app.setUIMode;
+      window.updateQuickGamma = app.updateQuickGamma;
+      window.updateQuickExposure = app.updateQuickExposure;
+      window.updateQuickContrast = app.updateQuickContrast;
+      window.updateQuickHue = app.updateQuickHue;
+      window.toggleQuickSymmetry = app.toggleQuickSymmetry;
+      window.syncMainFromQuickMenu = app.syncMainFromQuickMenu;
+
+      // Mobile detection
+      function checkMobile() {
+        const warning = document.getElementById("mobile-warning");
+        if (!warning) return;
+
+        if (window.innerWidth < 1000) {
+          document.body.classList.add("mobile-blocked");
+          warning.classList.add("show");
+        } else {
+          document.body.classList.remove("mobile-blocked");
+          warning.classList.remove("show");
+        }
+      }
+
+      window.addEventListener("DOMContentLoaded", checkMobile);
+      window.addEventListener("resize", checkMobile);
+      window.addEventListener("orientationchange", checkMobile);
     </script>
-</body>
+  </body>
 </html>
