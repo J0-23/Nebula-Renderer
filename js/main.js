@@ -1,7 +1,7 @@
 
 // ─── Imports ──────────────────────────────────────────────────────────────────
 
-import { initRenderer, startRender, stopRender, clearGrid, applyPaint, getCtx } from "./renderer.js";
+import { initRenderer, startRender, stopRender, clearGrid, applyPaint, getCtx, isRunning } from "./renderer.js";
 import { hslToRgb, makeFractalCode } from "./helpers.js";
 import { PRESETS, QUALITY_PRESETS } from "./presets.js";
 import { getAdaptiveParams, onAdaptiveChange, atVarPreset, atChunkPreset, resetAdaptive } from "./adaptive-tuning.js";
@@ -14,7 +14,7 @@ let currentPreset = "galaxy";
 let filterSource = "";
 let tracerSource = "";
 let customPresets = {};
-let lineHSL = [33, 100, 60];
+let lineHSL = [33, 83, 47];
 let repaintTimer = null;
 let uiMode = "basic";
 
@@ -44,7 +44,7 @@ function init() {
     ctx = getCtx();
     customPresets = JSON.parse(localStorage.getItem("fractalCustomPresets") || "{}");
     selectPreset("galaxy");
-    setQuality("med", null);
+    setQuality("low", null);
     initPanels();
     initUIMode();
 }
@@ -147,11 +147,11 @@ function setQuality(quality, btn) {
     document.getElementById("at-enabled").checked = !!ad;
 
     if (ad) {
-        document.getElementById("at-var").value = ad.variance;
-        document.getElementById("at-var-v").textContent = ad.variance.toFixed(3);
+        document.getElementById("at-var").value = ad.varianceThreshold;
+        document.getElementById("at-var-v").textContent = ad.varianceThreshold.toFixed(2);
 
         document.querySelectorAll(".at-scale").forEach((b) => b.classList.remove("on"));
-        const idx = ad.variance <= 0.001 ? 0 : ad.variance <= 0.025 ? 1 : 2;
+        const idx = ad.varianceThreshold <= 0.1 ? 0 : ad.varianceThreshold <= 0.5 ? 1 : 2;
         document.querySelector(`.at-scale:nth-child(${idx + 1})`)?.classList.add("on");
 
         document.getElementById("at-agg").value = ad.passes;
@@ -498,6 +498,7 @@ function readPaintParams() {
         toneMap: id("toneMap")?.value || "aces",
         toneStrength: val("toneStrength", 1),
         exposure: val("exposure", 1),
+        depthBoost: val("depthBoost", 1),
         bloomEnabled: check("bloomEnabled"),
         bloomThreshold: val("bloomThreshold", 0.5),
         bloomIntensity: val("bloomIntensity", 0.5),

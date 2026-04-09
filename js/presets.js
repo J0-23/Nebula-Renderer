@@ -51,26 +51,27 @@ export const PRESETS = {
 
 // ─── Quality presets ────────────────────────────────────────────────────────────
 // Determines render quality settings: iterations (detail), samples (smoothness), and adaptive sampling.
+// NOTE: Iterations have more impact on visual quality than samples.
 
 export const QUALITY_PRESETS = {
     low: {
-        iterations: 8000,
-        samples: 3000000,
-        adaptive: null,
+        iterations: 10000,
+        samples: 1000000,
+        adaptive: { varianceThreshold: 0.8, passes: 1, hitDensity: 0.2, chunkSize: 0.2 },
     },
     med: {
-        iterations: 12000,
-        samples: 5000000,
-        adaptive: { variance: 0.025, passes: 1, hitDensity: 0.1, chunk: 0.15 },
+        iterations: 20000,
+        samples: 2000000,
+        adaptive: { varianceThreshold: 0.5, passes: 1, hitDensity: 0.1, chunkSize: 0.1 },
     },
     high: {
-        iterations: 20000,
-        samples: 8000000,
-        adaptive: { variance: 0.001, passes: 4, hitDensity: 0.05, chunk: 0.1 },
+        iterations: 40000,
+        samples: 3000000,
+        adaptive: { varianceThreshold: 0.3, passes: 4, hitDensity: 0.005, chunkSize: 0.05 },
     },
     ultra: {
-        iterations: 80000,
-        samples: 25000000,
-        adaptive: { variance: 0.001, passes: 8, hitDensity: 0.005, chunk: 0.05 },
+        iterations: 60000,
+        samples: 5000000,
+        adaptive: { varianceThreshold: 0.1, passes: 8, hitDensity: 0.005, chunkSize: 0.05 },
     },
 };

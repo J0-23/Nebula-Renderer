@@ -425,6 +425,30 @@ body {
   text-overflow: ellipsis;
 }
 
+.field-desc {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--ac);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
+  padding: 2px 0;
+}
+
+.fr .f {
+  gap: 4px;
+}
+
+.fr .f .field-desc {
+  padding: 0;
+  margin-bottom: -2px;
+}
+
+.fr .f label {
+  text-align: center;
+  font-size: 11px;
+}
+
 input[type="number"],
 input[type="text"],
 select {

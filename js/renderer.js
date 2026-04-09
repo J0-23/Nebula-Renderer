@@ -37,8 +37,8 @@ const WORLD_RANGE = 2.25;
 
 export const adaptiveDefaults = {
     enabled: false,
-    varianceThreshold: 0.008,
-    passMultiplier: 1,
+    varianceThreshold: 0.3,
+    passMultiplier: 3,
     hitDensityThreshold: 0.1,
     chunkSize: 0.1,
 };
@@ -94,34 +94,99 @@ function makeWorkerSource(filterSource, tracerSource) {
 ${filterSource}
 ${tracerSource}
 
-function traceCell(cell, cam, step, buf, useSAB, countHits) {
+// Exploration settings
+var EXPLORATION_RATE = 0.15;  // 15% of samples are random exploration
+var EXPLORATION_BOOST = 2.0;   // Exploration hits count 2x to compensate for lower hit rate
+
+function traceCell(cell, cam, step, buf, useSAB, countHits, sampleStats) {
     var W = cam.W, H = cam.H;
-    var hits = 0, samples = 0;
+    var hits = 0, samples = 0, accepted = 0;
+    var cellW = cell.x1 - cell.x0;
+    var cellH = cell.y1 - cell.y0;
+    var pixelHitCounts = [];
+    
+    function addHit(px, py) {
+        if (px >= 0 && py >= 0 && px < W && py < H) {
+            var idx = px + py * W;
+            if (useSAB) {
+                Atomics.add(buf, idx, 1);
+            } else {
+                buf[idx]++;
+            }
+            hits++;
+            if (sampleStats) sampleStats.hits++;
+        }
+    }
+    
+    // Primary grid sampling (exploitation)
     for (var x = cell.x0; x < cell.x1; x += step) {
         for (var y = cell.y0; y < cell.y1; y += step) {
             samples++;
+            var localHits = 0;
+            
             var ok = false;
             try { ok = filterFunc(x, y, cam.it); } catch(e) {}
             if (!ok) continue;
+            
+            accepted++;
             try {
                 tracerFunc(x, y, cam.it, function(fx, fy) {
                     var px = (fx * cam.scaleX + cam.offsetX + 0.5) | 0;
                     var py = (fy * cam.scaleY + cam.offsetY + 0.5) | 0;
-                    if (px >= 0 && py >= 0 && px < W && py < H) {
-                        var idx = px + py * W;
-                        if (useSAB) {
-                            Atomics.add(buf, idx, 1);
-                        } else {
-                            buf[idx]++;
-                        }
-                        hits++;
-                    }
+                    addHit(px, py);
+                    localHits++;
+                });
+            } catch(e) {}
+            
+            if (localHits > 0) pixelHitCounts.push(localHits);
+        }
+    }
+    
+    // Random exploration sampling - find rare trajectories
+    // Only do this if filter found something (cell has detail)
+    if (accepted > 0) {
+        var exploreSamples = Math.max(3, Math.floor(accepted * EXPLORATION_RATE));
+        for (var e = 0; e < exploreSamples; e++) {
+            samples++;
+            // Random point within cell - biased toward center
+            var rx = cell.x0 + Math.random() * cellW;
+            var ry = cell.y0 + Math.random() * cellH;
+            
+            var ok = false;
+            try { ok = filterFunc(rx, ry, cam.it); } catch(e) {}
+            if (!ok) continue;
+            
+            accepted++;
+            try {
+                tracerFunc(rx, ry, cam.it, function(fx, fy) {
+                    var px = (fx * cam.scaleX + cam.offsetX + 0.5) | 0;
+                    var py = (fy * cam.scaleY + cam.offsetY + 0.5) | 0;
+                    addHit(px, py);
                 });
             } catch(e) {}
         }
     }
+    
+    // Calculate variance (coefficient of variation)
+    var density = samples > 0 ? hits / samples : 0;
+    var variance = 0;
+    if (pixelHitCounts.length > 1 && hits > 0) {
+        var mean = hits / pixelHitCounts.length;
+        var sumSqDiff = 0;
+        for (var i = 0; i < pixelHitCounts.length; i++) {
+            var diff = pixelHitCounts[i] - mean;
+            sumSqDiff += diff * diff;
+        }
+        var stddev = Math.sqrt(sumSqDiff / pixelHitCounts.length);
+        variance = stddev / (mean + 0.001);
+    }
+    
     if (countHits) _cellHits += hits;
-    return samples > 0 ? hits / samples : 0;
+    if (sampleStats) {
+        sampleStats.totalSamples += samples;
+        sampleStats.accepted += accepted;
+    }
+    return { density, variance, hits, samples };
 }
 
 self.onmessage = function(e) {
@@ -131,7 +196,8 @@ self.onmessage = function(e) {
         self._baseStep = d.baseStep;
         self._useSAB = d.useSAB;
         self._coarseScale = d.coarseScale || 4;
-        self._hitDensityThreshold = d.hitDensityThreshold || 0.02;
+        self._hitDensityThreshold = d.hitDensityThreshold || 0.1;
+        self._varianceThreshold = d.varianceThreshold || 0.3;
         self._passMultiplier = d.passMultiplier || 3;
         if (d.useSAB) self._buf = new Uint32Array(d.sab);
         return;
@@ -146,17 +212,26 @@ self.onmessage = function(e) {
 
         var coarseScale = d.coarseScale || self._coarseScale;
         var hitDensityThreshold = d.hitDensityThreshold || self._hitDensityThreshold;
+        var varianceThreshold = d.varianceThreshold || self._varianceThreshold || 0.3;
         var passMultiplier = d.passMultiplier || self._passMultiplier;
 
         var localBuf = useSAB ? self._buf : new Uint32Array(cam.W * cam.H);
         var coarseStep = baseStep * coarseScale;
         self._cellHits = 0;
 
-        var density = traceCell(cell, cam, coarseStep, localBuf, useSAB, true);
+        var sampleStats = { totalSamples: 0, hits: 0, accepted: 0 };
 
-        if (density > hitDensityThreshold) {
-            for (var p = 0; p < passMultiplier; p++) {
-                traceCell(cell, cam, baseStep, localBuf, useSAB, true);
+        var coarseResult = traceCell(cell, cam, coarseStep, localBuf, useSAB, true, sampleStats);
+        var density = coarseResult.density;
+        var variance = coarseResult.variance;
+
+        // Score-based refinement: density = location, variance = detail priority
+        // Higher score = more passes needed
+        if (density > hitDensityThreshold && variance > varianceThreshold) {
+            var score = density * (1 + variance);
+            var extraPasses = Math.min(Math.floor(score * 20), passMultiplier * 3);
+            for (var p = 0; p < extraPasses; p++) {
+                traceCell(cell, cam, baseStep, localBuf, useSAB, true, sampleStats);
             }
         }
 
@@ -164,14 +239,14 @@ self.onmessage = function(e) {
         var totalHits = self._cellHits;
 
         if (useSAB) {
-            self.postMessage({ type: 'done', cell: cell, elapsed: elapsed, hits: totalHits });
+            self.postMessage({ type: 'done', cell: cell, elapsed: elapsed, hits: totalHits, variance: variance, stats: sampleStats });
         } else {
             var idxArr = [], valArr = [];
             for (var i = 0; i < localBuf.length; i++) {
                 if (localBuf[i] > 0) { idxArr.push(i); valArr.push(localBuf[i]); }
             }
             self.postMessage({
-                type: 'done', cell: cell, elapsed: elapsed, hits: totalHits,
+                type: 'done', cell: cell, elapsed: elapsed, hits: totalHits, variance: variance, stats: sampleStats,
                 indices: new Uint32Array(idxArr), values: new Uint32Array(valArr)
             }, [new Uint32Array(idxArr).buffer, new Uint32Array(valArr).buffer]);
         }
@@ -337,8 +412,10 @@ function applySymmetry(src, W, H, symH, symV, order) {
                 var my = symV ? H - 1 - y : y;
                 sym[y * W + x] = src[y * W + x] + src[my * W + mx];
             } else if (order === "alt4way") {
-                var temp = Math.max(src[y * W + x], src[y * W + (W - 1 - x)]);
-                sym[y * W + x] = Math.max(temp, src[(H - 1 - y) * W + x]);
+                var hMirror = src[y * W + (W - 1 - x)];
+                var vMirror = src[(H - 1 - y) * W + x];
+                var diagMirror = src[(H - 1 - y) * W + (W - 1 - x)];
+                sym[y * W + x] = Math.max(src[y * W + x], hMirror, vMirror, diagMirror);
             } else {
                 sym[y * W + x] = src[y * W + x];
             }
@@ -416,9 +493,12 @@ self.onmessage = function(e) {
     var symSrc = applySymmetry(src, W, H, p.symH, p.symV, p.symOrder);
 
     // Normalize to HDR
+    var depthBoost = p.depthBoost !== undefined ? p.depthBoost : 1.0;
     var hdr = new Float32Array(W * H);
     for (i = 0; i < W * H; i++) {
-        hdr[i] = max > 0 ? Math.sqrt(symSrc[i] / (max + 1)) : 0;
+        var t = max > 0 ? Math.sqrt(symSrc[i] / (max + 1)) : 0;
+        if (depthBoost !== 1.0) t = Math.min(1, t * depthBoost);
+        hdr[i] = t;
     }
 
     // Exposure
@@ -528,8 +608,10 @@ function applySymmetry(src, W, H, symH, symV, order) {
                 const my = symV ? H - 1 - y : y;
                 sym[y * W + x] = src[y * W + x] + src[my * W + mx];
             } else if (order === "alt4way") {
-                const temp = Math.max(src[y * W + x], src[y * W + (W - 1 - x)]);
-                sym[y * W + x] = Math.max(temp, src[(H - 1 - y) * W + x]);
+                const hMirror = src[y * W + (W - 1 - x)];
+                const vMirror = src[(H - 1 - y) * W + x];
+                const diagMirror = src[(H - 1 - y) * W + (W - 1 - x)];
+                sym[y * W + x] = Math.max(src[y * W + x], hMirror, vMirror, diagMirror);
             } else {
                 sym[y * W + x] = src[y * W + x];
             }
@@ -599,6 +681,8 @@ function updateStatsPanel(callbacks) {
     const progressEl = document.getElementById("rst-progress");
     const hitsEl = document.getElementById("rst-hits");
     const workersEl = document.getElementById("rst-workers");
+    const samplesEl = document.getElementById("rst-samples");
+    const acceptedEl = document.getElementById("rst-accepted");
     if (!timeEl) return;
 
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -610,6 +694,17 @@ function updateStatsPanel(callbacks) {
     timeEl.textContent = `Time: ${elapsed}s`;
     progressEl.textContent = `Progress: ${progress}% (${cellsDone}/${cellsTotal} cells)`;
     hitsEl.textContent = `Total hits: ${formatNum(totalHits)}`;
+
+    let totalSamples = 0, totalAccepted = 0, totalHitsVal = 0;
+    for (const i in workerStats) {
+        totalSamples += workerStats[i].totalSamples || 0;
+        totalAccepted += workerStats[i].accepted || 0;
+        totalHitsVal += workerStats[i].hits || 0;
+    }
+    const hitsPerSec = elapsed > 0 ? formatNum(Math.round(totalHitsVal / elapsed)) : 0;
+
+    if (samplesEl) samplesEl.textContent = `Samples: ${formatNum(totalSamples)}`;
+    if (acceptedEl) acceptedEl.textContent = `Hits/s: ${hitsPerSec}`;
 
     if (workersEl) {
         let html = "";
@@ -623,9 +718,10 @@ function updateStatsPanel(callbacks) {
             const time = ws.elapsed || 1;
             const avgSpeed = Math.round((hits / time) * 1000);
             const spd = time > 0 ? formatNum(avgSpeed) + "/s" : "-";
+            const accRate = ws.totalSamples > 0 ? (ws.accepted / ws.totalSamples * 100).toFixed(1) : 0;
             html += `<div class="worker-stat">
                 <span class="worker-stat-id" style="color:${col}">W${i + 1}</span>
-                <span class="worker-stat-info">${statusText} | ${formatNum(hits)}h | ${spd}</span>
+                <span class="worker-stat-info">${statusText} | ${formatNum(hits)}h | ${spd} | ${accRate}%</span>
             </div>`;
         }
         workersEl.innerHTML = html;
@@ -828,7 +924,7 @@ export function startRender(params, callbacks = {}) {
             return;
         }
         const cell = cellQueue[queueHead++];
-        workerStats[id] = { status: "active", hits: 0, elapsed: 0 };
+        workerStats[id] = { status: "active", hits: 0, elapsed: 0, totalSamples: 0, accepted: 0 };
         worker.postMessage({ type: "cell", cell });
     }
 
@@ -849,10 +945,13 @@ export function startRender(params, callbacks = {}) {
             }
 
             const prev = workerStats[i];
+            const stats = msg.stats || {};
             workerStats[i] = {
                 status: "done",
                 hits: (prev?.hits || 0) + (msg.hits || 0),
                 elapsed: (prev?.elapsed || 0) + (msg.elapsed || 1),
+                totalSamples: (prev?.totalSamples || 0) + (stats.totalSamples || 0),
+                accepted: (prev?.accepted || 0) + (stats.accepted || 0),
             };
 
             cellsDone++;
@@ -875,6 +974,7 @@ export function startRender(params, callbacks = {}) {
             type: "init", cam, baseStep, useSAB,
             coarseScale: adaptiveCoarseScale,
             hitDensityThreshold: adaptiveHitThreshold,
+            varianceThreshold: params.adaptiveVarianceThreshold ?? _adaptive.varianceThreshold,
             passMultiplier: adaptivePassMult,
         };
         if (useSAB) initMsg.sab = sab;
@@ -900,13 +1000,16 @@ export function applyPaint(params) {
     for (let i = 0; i < src.length; i++) if (src[i] > maxVal) maxVal = src[i];
 
     const exposure = params.exposure ?? 1;
+    const depthBoost = params.depthBoost ?? 1;
     const toneMap = params.toneMap || 'aces';
     const toneStrength = params.toneStrength ?? 1;
     const toneFn = getToneFn(toneMap);
 
     const hdr = new Float32Array(width * height);
     for (let i = 0; i < width * height; i++) {
-        hdr[i] = maxVal > 0 ? Math.sqrt(src[i] / (maxVal + 1)) : 0;
+        let t = maxVal > 0 ? Math.sqrt(src[i] / (maxVal + 1)) : 0;
+        if (depthBoost !== 1.0) t = Math.min(1, t * depthBoost);
+        hdr[i] = t;
     }
 
     if (exposure !== 1.0) {

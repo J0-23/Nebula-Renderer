@@ -67,7 +67,7 @@ export function onAdaptiveChange() {
  */
 export function atVarPreset(value, btn) {
     document.getElementById('at-var').value = value;
-    document.getElementById('at-var-v').textContent = value.toFixed(3);
+    document.getElementById('at-var-v').textContent = value.toFixed(2);
 
     document.querySelectorAll('.at-scale').forEach(b => b.classList.remove('on'));
     btn.classList.add('on');
@@ -105,9 +105,9 @@ export function resetAdaptive() {
 
     // Variance
     document.getElementById('at-var').value = d.varianceThreshold;
-    document.getElementById('at-var-v').textContent = d.varianceThreshold.toFixed(3);
+    document.getElementById('at-var-v').textContent = d.varianceThreshold.toFixed(2);
 
-    // Variance preset buttons
+    // Scale preset buttons (fast/balanced/fine)
     document.querySelectorAll('.at-scale').forEach(b => b.classList.remove('on'));
     document.querySelector('.at-scale:nth-child(2)')?.classList.add('on');
 
