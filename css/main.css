@@ -10,6 +10,7 @@
 
 :root {
   --bg: #07070a;
+  --bg2: #0d0d12;
   --s1: #0d0d12;
   --s2: #131318;
   --s3: #18181f;
@@ -87,7 +88,9 @@ body {
   justify-content: center;
   gap: 6px;
   color: var(--mu);
-  transition: color 0.14s, background 0.14s;
+  transition:
+    color 0.14s,
+    background 0.14s;
   padding: 0;
   flex-shrink: 0;
 }
@@ -251,7 +254,9 @@ body {
   font-size: 12px;
   font-family: var(--mono);
   white-space: nowrap;
-  transition: color 0.15s, border-color 0.15s;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
   flex-shrink: 0;
   margin-left: 20px;
 }
@@ -259,6 +264,32 @@ body {
 .page-close:hover {
   color: var(--tx);
   border-color: var(--b3);
+}
+
+/* ── Canvas Tip ── */
+.canvas-tip {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--s2);
+  color: var(--tx);
+  font-size: 12px;
+  padding: 10px 16px;
+  border-radius: 4px;
+  border: 1px solid var(--b2);
+  z-index: 10;
+  pointer-events: none;
+  transition: opacity 2s;
+  text-align: left;
+  white-space: normal;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.canvas-tip.hidden {
+  opacity: 0;
 }
 
 /* ── Panel Header & Body ── */
@@ -373,27 +404,6 @@ body {
   background: var(--s3);
 }
 
-.adv-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  cursor: pointer;
-  font-size: var(--fs0);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--mu);
-  user-select: none;
-  background: var(--s2);
-  border-radius: var(--r);
-  margin: 8px 0;
-  border: 1px dashed var(--ac);
-}
-
-.adv-header:hover {
-  background: var(--s3);
-}
-
 .adv-body {
   padding: 0 12px 12px;
 }
@@ -462,7 +472,9 @@ select {
   width: 100%;
   height: var(--ih);
   outline: none;
-  transition: border-color 0.14s, background 0.14s;
+  transition:
+    border-color 0.14s,
+    background 0.14s;
   -moz-appearance: textfield;
   min-width: 0;
 }
@@ -585,7 +597,10 @@ input[type="range"]::-moz-range-thumb {
   border: 1px solid var(--b2);
   background: transparent;
   color: var(--mu2);
-  transition: color 0.14s, background 0.14s, border-color 0.14s;
+  transition:
+    color 0.14s,
+    background 0.14s,
+    border-color 0.14s;
   height: var(--ih);
   white-space: nowrap;
   display: inline-flex;
@@ -685,7 +700,10 @@ input[type="range"]::-moz-range-thumb {
   border: 1px solid var(--b1);
   background: var(--s3);
   color: var(--mu2);
-  transition: color 0.14s, background 0.14s, border-color 0.14s;
+  transition:
+    color 0.14s,
+    background 0.14s,
+    border-color 0.14s;
   text-align: left;
   width: 100%;
 }
@@ -720,7 +738,10 @@ input[type="range"]::-moz-range-thumb {
   border: 1px solid var(--b1);
   background: transparent;
   color: var(--mu2);
-  transition: color 0.14s, background 0.14s, border-color 0.14s;
+  transition:
+    color 0.14s,
+    background 0.14s,
+    border-color 0.14s;
   white-space: nowrap;
 }
 
@@ -781,7 +802,9 @@ input[type="range"]::-moz-range-thumb {
   background: var(--s4);
   border: 1px solid var(--b2);
   border-radius: 20px;
-  transition: background 0.17s, border-color 0.17s;
+  transition:
+    background 0.17s,
+    border-color 0.17s;
 }
 
 .tsw input:checked + .ttr {
@@ -872,7 +895,9 @@ input[type="range"]::-moz-range-thumb {
   border-radius: var(--r);
   padding: clamp(5px, 0.48vw, 8px) clamp(7px, 0.65vw, 10px);
   cursor: pointer;
-  transition: border-color 0.13s, background 0.13s;
+  transition:
+    border-color 0.13s,
+    background 0.13s;
 }
 
 .pc:hover {
@@ -1264,7 +1289,9 @@ input[type="range"]::-moz-range-thumb {
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   z-index: 100;
-  transition: box-shadow 0.2s, opacity 0.15s;
+  transition:
+    box-shadow 0.2s,
+    opacity 0.15s;
 }
 
 .floating-panel.dragging {
@@ -1289,8 +1316,8 @@ input[type="range"]::-moz-range-thumb {
 #quick-controls-panel {
   top: 240px;
   right: 20px;
-  min-width: 200px;
-  max-width: 240px;
+  min-width: 220px;
+  max-width: 260px;
   z-index: 200;
 }
 
@@ -1322,7 +1349,7 @@ input[type="range"]::-moz-range-thumb {
 .qm-row label {
   font-size: 11px;
   color: var(--tx);
-  min-width: 60px;
+  min-width: 70px;
   flex-shrink: 0;
 }
 
@@ -1474,7 +1501,9 @@ input[type="range"]::-moz-range-thumb {
   padding: 4px 6px;
   font-size: 12px;
   border-radius: var(--r);
-  transition: color 0.14s, background 0.14s;
+  transition:
+    color 0.14s,
+    background 0.14s;
 }
 
 .panel-btn:hover {
@@ -1522,7 +1551,9 @@ input[type="range"]::-moz-range-thumb {
 .at-chevron {
   font-size: 11px;
   color: var(--mu);
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.14s;
+  transition:
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.14s;
   flex-shrink: 0;
 }
 
@@ -1538,7 +1569,9 @@ input[type="range"]::-moz-range-thumb {
   overflow: hidden;
   max-height: 0;
   opacity: 0;
-  transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+  transition:
+    max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s ease;
   pointer-events: none;
 }
 
@@ -1572,7 +1605,9 @@ input[type="range"]::-moz-range-thumb {
   color: var(--mu);
   cursor: help;
   flex-shrink: 0;
-  transition: border-color 0.13s, color 0.13s;
+  transition:
+    border-color 0.13s,
+    color 0.13s;
   line-height: 1;
 }
 
@@ -1598,7 +1633,10 @@ input[type="range"]::-moz-range-thumb {
   border: 1px solid var(--b1);
   background: transparent;
   color: var(--mu);
-  transition: color 0.14s, background 0.14s, border-color 0.14s;
+  transition:
+    color 0.14s,
+    background 0.14s,
+    border-color 0.14s;
   white-space: nowrap;
 }
 

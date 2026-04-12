@@ -138,12 +138,42 @@
                 </div>
               </div>
               <div class="pills">
-                <button class="pl pl-stretch on" onclick="setResolution(1280, 720, this)">720p</button>
-                <button class="pl pl-stretch" onclick="setResolution(1920, 1080, this)">1080p</button>
-                <button class="pl pl-stretch" onclick="setResolution(2560, 1440, this)">1440p</button>
-                <button class="pl pl-stretch" onclick="setResolution(3840, 2160, this)">4K</button>
-                <button class="pl pl-stretch" onclick="setResolution(5120, 2880, this)">5K</button>
-                <button class="pl pl-stretch" onclick="setResolution(7680, 4320, this)">8K</button>
+                <button
+                  class="pl pl-stretch on"
+                  onclick="setResolution(1280, 720, this)"
+                >
+                  720p
+                </button>
+                <button
+                  class="pl pl-stretch"
+                  onclick="setResolution(1920, 1080, this)"
+                >
+                  1080p
+                </button>
+                <button
+                  class="pl pl-stretch"
+                  onclick="setResolution(2560, 1440, this)"
+                >
+                  1440p
+                </button>
+                <button
+                  class="pl pl-stretch"
+                  onclick="setResolution(3840, 2160, this)"
+                >
+                  4K
+                </button>
+                <button
+                  class="pl pl-stretch"
+                  onclick="setResolution(5120, 2880, this)"
+                >
+                  5K
+                </button>
+                <button
+                  class="pl pl-stretch"
+                  onclick="setResolution(7680, 4320, this)"
+                >
+                  8K
+                </button>
               </div>
             </div>
 
@@ -175,10 +205,27 @@
                 </div>
               </div>
               <div class="pills">
-                <button class="pl pl-stretch on" onclick="setQuality('low', this)">Low</button>
-                <button class="pl pl-stretch" onclick="setQuality('med', this)">Med</button>
-                <button class="pl pl-stretch" onclick="setQuality('high', this)">High</button>
-                <button class="pl pl-stretch" onclick="setQuality('ultra', this)">Ultra</button>
+                <button
+                  class="pl pl-stretch on"
+                  onclick="setQuality('low', this)"
+                >
+                  Low
+                </button>
+                <button class="pl pl-stretch" onclick="setQuality('med', this)">
+                  Med
+                </button>
+                <button
+                  class="pl pl-stretch"
+                  onclick="setQuality('high', this)"
+                >
+                  High
+                </button>
+                <button
+                  class="pl pl-stretch"
+                  onclick="setQuality('ultra', this)"
+                >
+                  Ultra
+                </button>
               </div>
             </div>
 
@@ -238,10 +285,7 @@
 
               <!-- Adaptive Tuning -->
               <div class="sec">
-                <div
-                  class="sl collapsible"
-                  onclick="toggleSection(this)"
-                >
+                <div class="sl collapsible" onclick="toggleSection(this)">
                   Adaptive Tuning
                 </div>
                 <div class="sec-content">
@@ -657,7 +701,8 @@
                     oninput="
                       window.syncLineHSL();
                       document.getElementById('qm-hue').value = this.value;
-                      document.getElementById('qm-hue-v').textContent = this.value + '°';
+                      document.getElementById('qm-hue-v').textContent =
+                        this.value + '°';
                     "
                   />
                   <span id="lHv">33°</span>
@@ -726,7 +771,8 @@
                     oninput="
                       coV.textContent = parseFloat(this.value).toFixed(2);
                       document.getElementById('qm-contrast').value = this.value;
-                      document.getElementById('qm-contrast-v').textContent = parseFloat(this.value).toFixed(2);
+                      document.getElementById('qm-contrast-v').textContent =
+                        parseFloat(this.value).toFixed(2);
                       window.lazyRepaint();
                     "
                   />
@@ -746,7 +792,8 @@
                     oninput="
                       gV.textContent = parseFloat(this.value).toFixed(2);
                       document.getElementById('qm-gamma').value = this.value;
-                      document.getElementById('qm-gamma-v').textContent = parseFloat(this.value).toFixed(2);
+                      document.getElementById('qm-gamma-v').textContent =
+                        parseFloat(this.value).toFixed(2);
                       window.lazyRepaint();
                     "
                   />
@@ -910,8 +957,10 @@
                       step="0.05"
                       oninput="
                         exV.textContent = parseFloat(this.value).toFixed(2);
-                        document.getElementById('qm-exposure').value = this.value;
-                        document.getElementById('qm-exposure-v').textContent = parseFloat(this.value).toFixed(2);
+                        document.getElementById('qm-exposure').value =
+                          this.value;
+                        document.getElementById('qm-exposure-v').textContent =
+                          parseFloat(this.value).toFixed(2);
                         lazyRepaint();
                       "
                     />
@@ -929,7 +978,12 @@
                       value="1"
                       step="0.1"
                       oninput="
-                        dbV.textContent = parseFloat(this.value).toFixed(1) + 'x';
+                        dbV.textContent =
+                          parseFloat(this.value).toFixed(1) + 'x';
+                        document.getElementById('qm-depthBoost').value =
+                          this.value;
+                        document.getElementById('qm-depthBoost-v').textContent =
+                          parseFloat(this.value).toFixed(1) + 'x';
                         lazyRepaint();
                       "
                     />
@@ -1169,6 +1223,9 @@
       </div>
 
       <div id="cv-area">
+        <div class="canvas-tip">
+          Tip: Adjust Exposure, Contrast, Gamma &amp; Depth Boost in Quick Controls window for better image quality.<br/>And don't forget to try different symmetry options for interesting designs.
+        </div>
         <canvas id="c"></canvas>
         <div id="zbadge">100%</div>
       </div>
@@ -1315,6 +1372,21 @@
               </div>
             </div>
             <div class="qm-row">
+              <label>Depth Boost</label>
+              <div class="qm-rr">
+                <input
+                  type="range"
+                  id="qm-depthBoost"
+                  min="0.5"
+                  max="5"
+                  value="1"
+                  step="0.1"
+                  oninput="window.updateQuickDepthBoost(this.value)"
+                />
+                <span id="qm-depthBoost-v">1.0x</span>
+              </div>
+            </div>
+            <div class="qm-row">
               <label>Hue</label>
               <div class="qm-rr">
                 <input
@@ -1329,6 +1401,9 @@
                 <span id="qm-hue-v">33°</span>
               </div>
             </div>
+            <button class="qm-btn" style="width: 100%; margin-top: 10px" onclick="window.resetAdjustments()">
+              Reset
+            </button>
           </div>
 
           <!-- Symmetry -->
@@ -1707,11 +1782,13 @@
       window.toggleSection = app.toggleSection;
       window.toggleAdvanced = app.toggleAdvanced;
       window.togglePanelMinimize = app.togglePanelMinimize;
+      window.resetAdjustments = app.resetAdjustments;
       window.closePanel = app.closePanel;
       window.setUIMode = app.setUIMode;
       window.updateQuickGamma = app.updateQuickGamma;
       window.updateQuickExposure = app.updateQuickExposure;
       window.updateQuickContrast = app.updateQuickContrast;
+      window.updateQuickDepthBoost = app.updateQuickDepthBoost;
       window.updateQuickHue = app.updateQuickHue;
       window.toggleQuickSymmetry = app.toggleQuickSymmetry;
       window.syncMainFromQuickMenu = app.syncMainFromQuickMenu;

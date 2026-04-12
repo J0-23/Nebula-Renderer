@@ -290,6 +290,46 @@ function updateColorSaturation(value) {
     lazyRepaint();
 }
 
+function resetAdjustments() {
+    document.getElementById("contrast").value = 1;
+    document.getElementById("coV").textContent = "1.00";
+    document.getElementById("qm-contrast").value = 1;
+    document.getElementById("qm-contrast-v").textContent = "1.00";
+
+    document.getElementById("gamma").value = 1;
+    document.getElementById("gV").textContent = "1.00";
+    document.getElementById("qm-gamma").value = 1;
+    document.getElementById("qm-gamma-v").textContent = "1.00";
+
+    document.getElementById("exposure").value = 2;
+    document.getElementById("exV").textContent = "2.00";
+    document.getElementById("qm-exposure").value = 2;
+    document.getElementById("qm-exposure-v").textContent = "2.00";
+
+    document.getElementById("depthBoost").value = 1;
+    document.getElementById("dbV").textContent = "1.0x";
+    document.getElementById("qm-depthBoost").value = 1;
+    document.getElementById("qm-depthBoost-v").textContent = "1.0x";
+
+    document.getElementById("vignette").value = 0;
+    document.getElementById("viV").textContent = "0.00";
+
+    document.getElementById("blur").value = 0;
+    document.getElementById("blV").textContent = "0";
+
+    document.getElementById("invert").checked = false;
+
+    lineHSL = [33, 83, 47];
+    document.getElementById("lH").value = 33;
+    document.getElementById("lHv").textContent = "33°";
+    document.getElementById("lS").value = 83;
+    document.getElementById("lSv").textContent = "83%";
+    document.getElementById("lL").value = 47;
+    document.getElementById("lLv").textContent = "47%";
+
+    lazyRepaint();
+}
+
 function setToneMap(type, btn) {
     document.getElementById("toneMap").value = type;
     if (btn) setPillActive(btn);
@@ -761,6 +801,16 @@ function updateQuickContrast(value) {
     updateQuickSlider("contrast", value, "qm-contrast-v", (v) => parseFloat(v).toFixed(2));
 }
 
+function updateQuickDepthBoost(value) {
+    const input = document.getElementById("depthBoost");
+    if (input) {
+        input.value = value;
+    }
+    const display = document.getElementById("qm-depthBoost-v");
+    if (display) display.textContent = parseFloat(value).toFixed(1) + "x";
+    applyPaint(readPaintParams());
+}
+
 function updateQuickHue(value) {
     const hue = parseInt(value);
     lineHSL[0] = hue;
@@ -865,6 +915,6 @@ export {
     handleStartRender as startRender, stopRender, toggleStats, setSymmetry,
     setToneMap, updateColorSaturation, toggleSection, toggleAdvanced,
     togglePanelMinimize, closePanel, initPanels, setUIMode,
-    updateQuickGamma, updateQuickExposure, updateQuickContrast, updateQuickHue,
-    toggleQuickSymmetry, syncMainFromQuickMenu,
+    updateQuickGamma, updateQuickExposure, updateQuickContrast, updateQuickDepthBoost, updateQuickHue,
+    toggleQuickSymmetry, syncMainFromQuickMenu, resetAdjustments,
 };
